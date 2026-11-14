@@ -7,3 +7,6 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# Built files to share (e.g. the extension zip); not part of the source
+dist/
