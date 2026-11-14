@@ -63,7 +63,7 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
   app.disable('x-powered-by');
 
   // When hosted, requests arrive through proxies that handle HTTPS (Render: Cloudflare,
-  // then Render's own proxy = 2). Each proxy adds the address it received the request
+  // then two Render proxies = 3, measured). Each proxy adds the address it received the request
   // from to the X-Forwarded-For header. Trusting exactly that many proxies gives the
   // visitor's REAL address (used by the rate limits); anything a visitor writes into
   // the header themselves sits further left and is ignored.
@@ -104,18 +104,6 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
       nameDetection: nameFinder ? nameFinder.status : 'off', // the local AI model (Phase 6)
       ai: llm?.configured ? { provider: llm.providerName, model: llm.model } : null, // the proxy (Phase 7)
       adminKeyRequired: Boolean(adminKey), // the dashboard asks for the key when true (Phase 10)
-    });
-  });
-
-  // ---- TEMPORARY (Phase 10 live check): what the gateway sees about YOUR request's
-  // address chain, to set TRUST_PROXY_HOPS correctly. Removed after the check. ----
-  app.get('/debug/client-ip', (req, res) => {
-    res.json({
-      trustProxyHops,
-      ipUsedForRateLimits: req.ip,
-      forwardedFor: req.get('x-forwarded-for') ?? null,
-      trueClientIp: req.get('true-client-ip') ?? null,
-      cfConnectingIp: req.get('cf-connecting-ip') ?? null,
     });
   });
 

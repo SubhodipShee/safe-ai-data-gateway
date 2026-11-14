@@ -301,7 +301,7 @@ The **Chrome Web Store** charges a one-time $5 fee, so skip it. Share the extens
 |---|---|
 | `HOST=0.0.0.0`, `PORT` from Render | Set in `render.yaml`. A non-local HOST switches on **public mode** |
 | **HTTPS only** | Render provides the certificate; a 301 redirect when `X-Forwarded-Proto: http`; HSTS header |
-| **Real visitor IP** (`TRUST_PROXY_HOPS=2` on Render) | **Measured on the live site:** requests pass Cloudflare, then Render's proxy. With 1 hop, each Cloudflare server counted as a "visitor" (counters alternated, a fake `X-Forwarded-For` got a fresh counter). With 2, the visitor's real IP is used and fake headers are ignored (tested) |
+| **Real visitor IP** (`TRUST_PROXY_HOPS=3` on Render) | **Measured on the live site** (temporary diagnostic, since removed): `X-Forwarded-For` arrives as `<visitor>, <Cloudflare server>, <Render internal>`, plus Render's last hop. With 1 or 2, a Cloudflare server counted as the "visitor" (counters alternated). With 3, the visitor's real IP is used and fake headers are ignored (tested) |
 | **Admin key** (`ADMIN_KEY`, Render generates it) | Needed only to **change** policies (`Authorization: Bearer …`, constant-time compare). The gateway refuses to start in public mode without one. The dashboard shows a 🔒 Unlock bar |
 | No key for `/mask`, `/unmask`, `/v1` | Deliberate: the public playground must work for interviewers on their phones. A key embedded in a public page protects nothing, so **rate limits** protect these instead |
 | **Rate limits** (`express-rate-limit`) | Per visitor: mask/detect 30/min, unmask 300/min (extension), API 60/min, real AI 6/min, admin 20 per 15 min. Plus **300 AI requests per day in total**, so the free Groq quota can't be drained |

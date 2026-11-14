@@ -31,10 +31,11 @@ services:
       # HTTPS redirect, rate limits, admin key; see src/security.js).
       - key: HOST
         value: 0.0.0.0
-      # Requests pass Cloudflare, then Render's proxy: 2 hops. Measured on the live
-      # site: with 1, the rate limits counted Cloudflare servers instead of visitors.
+      # Requests pass Cloudflare and two Render proxies: 3 hops. Measured on the live
+      # site (X-Forwarded-For = "<visitor>, <Cloudflare>, <Render internal>"). With
+      # fewer, the rate limits counted Cloudflare servers instead of visitors.
       - key: TRUST_PROXY_HOPS
-        value: "2"
+        value: "3"
       # Paste the SAME values as in your gateway/.env (Render asks for them):
       - key: MONGODB_URI
         sync: false
