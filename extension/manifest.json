@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Safe AI Gateway",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Masks Aadhaar, PAN, emails and keys before they reach ChatGPT, Claude or Gemini, then restores them. By Subhodip Shee.",
   "homepage_url": "https://github.com/SubhodipShee/safe-ai-data-gateway",
   "icons": {

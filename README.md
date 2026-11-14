@@ -178,4 +178,4 @@ identifier detection, keyed source-code fingerprinting, and tamper-evident DPDP 
 ---
 *Technical evidence to support DPDP Act, 2023 compliance. Not legal advice.*
 
-© 2026 Subhodip Shee · [MIT License](LICENSE)
+© 2026 Subhodip Shee. All rights reserved. You may view the code and try the extension and demo; copying, modifying, redistributing or publishing it needs written permission. See [LICENSE](LICENSE).

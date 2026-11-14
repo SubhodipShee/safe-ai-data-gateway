@@ -1,0 +1,30 @@
+Safe AI Gateway: Proprietary License (All Rights Reserved)
+
+Copyright (c) 2026 Subhodip Shee. All rights reserved.
+
+This software, including its source code, the "Safe AI Gateway" browser extension,
+the gateway server, the website, the documentation and the design (together, the
+"Software"), is the property of Subhodip Shee and is protected by copyright law.
+
+1. WHAT YOU MAY DO
+   - View the source code.
+   - Install and use the browser extension and the demo website to evaluate and
+     test them, for your own personal, non-commercial use.
+
+2. WHAT YOU MAY NOT DO without prior written permission from Subhodip Shee
+   - Copy, modify, adapt, translate or create derivative works of the Software
+     or any part of it.
+   - Publish, distribute, share, sublicense, rent or sell the Software or any part
+     of it, including in any app store, extension store or marketplace.
+   - Use the Software, or any part of it, in or as a product or service, whether
+     free or paid.
+   - Present the Software, or any part of it, as your own work, or remove or change
+     any copyright notice, author name or this license.
+
+3. NO WARRANTY
+   The Software is provided "as is", without warranty of any kind. The author is
+   not liable for any claim, damage or other liability arising from its use.
+
+4. PERMISSION
+   To request permission for any use not allowed above, contact Subhodip Shee:
+   https://github.com/SubhodipShee

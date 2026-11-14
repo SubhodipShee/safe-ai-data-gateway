@@ -1,3 +1,6 @@
+// Safe AI Gateway © 2026 Subhodip Shee. All rights reserved. See LICENSE.txt.
+// Copying, modifying, redistributing or publishing this code is not permitted
+// without written permission from the author.
 // =============================================================================
 // popup.js: the extension popup (on/off, gateway status, counters)
 // =============================================================================

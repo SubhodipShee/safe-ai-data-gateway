@@ -1,21 +1,30 @@
-MIT License
+Safe AI Gateway: Proprietary License (All Rights Reserved)
 
-Copyright (c) 2026 Subhodip Shee
+Copyright (c) 2026 Subhodip Shee. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software, including its source code, the "Safe AI Gateway" browser extension,
+the gateway server, the website, the documentation and the design (together, the
+"Software"), is the property of Subhodip Shee and is protected by copyright law.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. WHAT YOU MAY DO
+   - View the source code.
+   - Install and use the browser extension and the demo website to evaluate and
+     test them, for your own personal, non-commercial use.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. WHAT YOU MAY NOT DO without prior written permission from Subhodip Shee
+   - Copy, modify, adapt, translate or create derivative works of the Software
+     or any part of it.
+   - Publish, distribute, share, sublicense, rent or sell the Software or any part
+     of it, including in any app store, extension store or marketplace.
+   - Use the Software, or any part of it, in or as a product or service, whether
+     free or paid.
+   - Present the Software, or any part of it, as your own work, or remove or change
+     any copyright notice, author name or this license.
+
+3. NO WARRANTY
+   The Software is provided "as is", without warranty of any kind. The author is
+   not liable for any claim, damage or other liability arising from its use.
+
+4. PERMISSION
+   To request permission for any use not allowed above, contact Subhodip Shee:
+   https://github.com/SubhodipShee

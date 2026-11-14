@@ -1,6 +1,7 @@
 # Safe AI Gateway: browser extension
 
-*Built by [Subhodip Shee](https://github.com/SubhodipShee) · © 2026*
+*Built by [Subhodip Shee](https://github.com/SubhodipShee) · © 2026 · All rights reserved.*
+*You may install and try it. Copying, modifying, sharing further or publishing it (including in any store) needs written permission. See [LICENSE.txt](LICENSE.txt).*
 
 Protects what you type into **ChatGPT, Claude and Gemini**. Before your message is sent,
 sensitive data (emails, phone numbers, Aadhaar, PAN, API keys, names…) is replaced with
