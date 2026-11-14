@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Safe AI Gateway icon: a blue shield with a white tick ("protected") -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b8cf0"/>
+      <stop offset="1" stop-color="#1f5fbf"/>
+    </linearGradient>
+  </defs>
+  <path d="M64 6 L114 23 V60 C114 92 93 113 64 123 C35 113 14 92 14 60 V23 Z"
+        fill="url(#g)" stroke="#174a96" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M40 64 L57 81 L89 47" fill="none" stroke="#fff" stroke-width="14"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
