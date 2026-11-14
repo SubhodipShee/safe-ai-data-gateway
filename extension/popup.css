@@ -1,0 +1,31 @@
+/* popup.css: styling for the extension popup (follows the system light/dark mode) */
+:root {
+  --bg: #ffffff; --text: #1c2330; --muted: #5d6879; --border: #dfe3ea;
+  --accent: #1f6feb; --ok: #1b6b3a; --bad: #a32020; --surface: #f6f7f9;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171c24; --text: #e6e9ef; --muted: #9aa4b2; --border: #2a313c;
+    --accent: #4c8dff; --ok: #8fdca9; --bad: #ffaaaa; --surface: #0f1319;
+    color-scheme: dark;
+  }
+}
+body { width: 300px; margin: 0; padding: 14px; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, sans-serif; }
+header { display: flex; gap: 8px; align-items: center; font-size: 16px; margin-bottom: 12px; }
+section { margin-top: 12px; }
+.label { margin: 0 0 4px; color: var(--muted); font-size: 12px; display: block; }
+.row { display: flex; gap: 6px; align-items: center; }
+.switch { gap: 8px; cursor: pointer; margin-top: 6px; }
+.hint { margin: 2px 0 0 26px; color: var(--muted); font-size: 12px; }
+input[type="url"], select { flex: 1; width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; font-size: 13px; }
+button { padding: 6px 10px; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: #fff; font: inherit; font-size: 13px; cursor: pointer; }
+.status { margin: 0 0 6px; font-size: 13px; }
+.status.ok { color: var(--ok); }
+.status.bad { color: var(--bad); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; }
+.stats div { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 4px; }
+.stats strong { display: block; font-size: 18px; }
+.stats span { color: var(--muted); font-size: 11px; }
+footer { margin-top: 12px; font-size: 12px; color: var(--muted); text-align: center; }
+a { color: var(--accent); }

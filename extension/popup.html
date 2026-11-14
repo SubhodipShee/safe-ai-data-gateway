@@ -1,0 +1,56 @@
+<!doctype html>
+<!-- popup.html: the small window that opens when you click the extension's icon -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Safe AI Gateway</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <span aria-hidden="true">🛡️</span>
+    <strong>Safe AI Gateway</strong>
+  </header>
+
+  <label class="row switch">
+    <input type="checkbox" id="enabled">
+    <span>Protection on</span>
+  </label>
+
+  <label class="row switch">
+    <input type="checkbox" id="show-real-values">
+    <span>Show real values on my screen</span>
+  </label>
+  <p class="hint">Off = see exactly what the AI received (only tags).</p>
+
+  <section>
+    <p class="label">Gateway</p>
+    <p id="status" class="status">Checking…</p>
+    <div class="row">
+      <input id="gateway-url" type="url" spellcheck="false" aria-label="Gateway address">
+      <button id="save-url" type="button">Save</button>
+    </div>
+  </section>
+
+  <section>
+    <label class="label" for="fail-mode">If the gateway is unreachable</label>
+    <select id="fail-mode">
+      <option value="block">Don't send (recommended)</option>
+      <option value="allow">Send without protection</option>
+    </select>
+  </section>
+
+  <section class="stats">
+    <div><strong id="stat-protected">0</strong><span>protected</span></div>
+    <div><strong id="stat-blocked">0</strong><span>blocked</span></div>
+    <div><strong id="stat-bypass">0</strong><span>bypass attempts</span></div>
+  </section>
+
+  <footer>
+    <a id="open-playground" href="#">Playground</a> ·
+    <a id="open-demo" href="#">Demo chat</a>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

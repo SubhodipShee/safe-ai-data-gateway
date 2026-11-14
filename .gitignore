@@ -1,0 +1,9 @@
+node_modules/
+# Downloaded AI model (~110 MB; re-downloaded automatically on first start)
+.models/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db

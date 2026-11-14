@@ -1,0 +1,3 @@
+# Keep Unix line endings in the repo (Render runs Linux); Windows editors handle them fine.
+* text=auto eol=lf
+*.png binary

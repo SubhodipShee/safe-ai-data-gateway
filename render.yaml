@@ -1,0 +1,43 @@
+# =============================================================================
+# render.yaml: tells Render (free hosting) how to run the gateway (Phase 10)
+# =============================================================================
+# Render reads this file from the GitHub repo ("Blueprint") and creates the
+# service with these settings. Every push to GitHub then redeploys automatically.
+#
+# Free plan, measured/verified:  512 MB RAM (gateway uses ~290 MB incl. the AI model),
+# 0.1 CPU (~0.3 s per message for name detection), free HTTPS, sleeps after 15 min
+# without visitors (first visit then takes ~1 minute), 750 free hours per month.
+#
+# SECRETS are NOT in this file. "sync: false" means Render asks you to paste them
+# in its dashboard when you create the service. They never go into git.
+# =============================================================================
+services:
+  - type: web
+    name: safe-ai-gateway
+    runtime: node
+    plan: free
+    # Closest Render region to India. Pick the one nearest your Atlas cluster.
+    region: singapore
+    # The app lives in the gateway/ folder of this repo.
+    rootDir: gateway
+    # Install exact versions from package-lock.json, then download the AI name
+    # model during the build so visitors don't wait for it.
+    buildCommand: npm ci && npm run download-model
+    startCommand: npm start
+    # Render checks this URL; it answers 200 only when Atlas is connected.
+    healthCheckPath: /health
+    envVars:
+      # Listen for visitors from the internet (this also switches on public mode:
+      # HTTPS redirect, rate limits, admin key; see src/security.js).
+      - key: HOST
+        value: 0.0.0.0
+      # Paste the SAME values as in your gateway/.env (Render asks for them):
+      - key: MONGODB_URI
+        sync: false
+      - key: MASTER_KEY # must match your laptop's, or old audit signatures and code fingerprints won't match
+        sync: false
+      - key: AI_API_KEY
+        sync: false
+      # Render creates a long random admin key for you. See it in Render → Environment.
+      - key: ADMIN_KEY
+        generateValue: true

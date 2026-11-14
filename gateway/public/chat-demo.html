@@ -1,0 +1,65 @@
+<!doctype html>
+<!--
+  chat-demo.html: a pretend AI chat for demonstrating the browser extension
+  ─────────────────────────────────────────────────────────────────────────
+  It behaves like a simple chat site: type, press Enter, get a reply.
+  The right-hand panel shows EXACTLY what the "AI company's server" received.
+    - WITHOUT the extension: your real data shows up there (a leak).
+    - WITH the extension:    only [[TAGS]] show up there, but the chat shows real values.
+  Useful as a backup demo if a real chat site changes its layout.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo AI Chat</title>
+  <style>
+    :root { --bg: #f6f7f9; --surface: #fff; --text: #1c2330; --muted: #5d6879; --border: #dfe3ea;
+      --accent: #10a37f; --user: #e7f1ff; --server-bg: #fff8e6; --server-text: #6b4a00; color-scheme: light; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f1319; --surface: #171c24; --text: #e6e9ef; --muted: #9aa4b2; --border: #2a313c;
+        --accent: #19c37d; --user: #1d2c47; --server-bg: #2b2412; --server-text: #f3d48a; color-scheme: dark; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+    .layout { display: grid; grid-template-columns: 1fr 320px; gap: 16px; max-width: 1100px; margin: 0 auto; padding: 16px; min-height: 100vh; }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+    h1 { font-size: 18px; margin: 0 0 4px; } .muted { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+    .chat { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .messages { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 300px; }
+    .bubble { padding: 10px 12px; border-radius: 10px; white-space: pre-wrap; max-width: 85%; }
+    .bubble[data-message-author-role="user"] { align-self: flex-end; background: var(--user); }
+    .bubble[data-message-author-role="assistant"] { align-self: flex-start; border: 1px solid var(--border); }
+    .composer { display: flex; gap: 8px; margin-top: 12px; }
+    #composer { flex: 1; min-height: 44px; max-height: 160px; overflow-y: auto; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); outline: none; white-space: pre-wrap; }
+    #composer:empty::before { content: attr(data-placeholder); color: var(--muted); }
+    #composer:focus { border-color: var(--accent); }
+    #send { padding: 0 16px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+    .server { background: var(--server-bg); color: var(--server-text); border-radius: 12px; padding: 14px; font-size: 13px; }
+    .server h2 { font-size: 14px; margin: 0 0 8px; }
+    .server pre { white-space: pre-wrap; word-break: break-word; margin: 0 0 10px; padding: 8px; border-radius: 6px; background: rgba(0,0,0,.05); font: 12px/1.5 ui-monospace, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <main class="chat">
+      <h1>Demo AI Chat</h1>
+      <p class="muted">A pretend chat site. Install the Safe AI Gateway extension and compare the right-hand panel with and without it.</p>
+      <div class="messages" id="messages" aria-live="polite"></div>
+      <div class="composer">
+        <div id="composer" contenteditable="true" role="textbox" aria-label="Message"
+             data-placeholder="Try: Refund Rahul Verma, rahul@gmail.com, PAN ABCPE1234F"></div>
+        <button id="send" type="button">Send</button>
+      </div>
+    </main>
+
+    <!-- data-safeai-skip: the extension must NOT restore tags here, because this panel shows the truth -->
+    <aside class="server" data-safeai-skip>
+      <h2>📡 What the AI company's server received</h2>
+      <div id="server-log"><p>Nothing yet.</p></div>
+    </aside>
+  </div>
+
+  <script src="chat-demo.js"></script>
+</body>
+</html>

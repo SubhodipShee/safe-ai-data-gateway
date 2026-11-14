@@ -1,0 +1,34 @@
+{
+  "name": "safe-ai-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Masks PII and secrets before prompts reach AI chatbots, then restores them in replies.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test",
+    "gen-key": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"",
+    "check-db": "node scripts/check-db.js",
+    "try": "node scripts/try-detect.js",
+    "vault-demo": "node scripts/vault-demo.js",
+    "tamper-demo": "node scripts/tamper-demo.js",
+    "register-code": "node scripts/register-code.js",
+    "check-ai": "node scripts/check-ai.js",
+    "download-model": "node scripts/download-model.js"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@huggingface/transformers": "^4.3.2",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.4",
+    "helmet": "^8.3.0",
+    "libphonenumber-js": "^1.13.16",
+    "mongoose": "^9.12.1"
+  }
+}

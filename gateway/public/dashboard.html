@@ -1,0 +1,110 @@
+<!doctype html>
+<!--
+  dashboard.html: the admin view of the gateway
+  ─────────────────────────────────────────────
+  What was caught (counts only, never the data), per day, per category and per
+  AI provider; whether the audit log is intact; the policies (change them live);
+  and the latest activity. Logic: dashboard.js · Styling: dashboard.css
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gateway Dashboard</title>
+  <meta name="description" content="What the Safe AI Gateway stopped from reaching AI tools, with tamper-proof evidence.">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-row">
+      <div class="brand">
+        <span aria-hidden="true">🛡️</span>
+        <h1>Safe AI Gateway <span class="muted">· Dashboard</span></h1>
+      </div>
+      <nav aria-label="Pages">
+        <a href="/playground.html">Playground</a>
+        <a href="/dashboard.html" aria-current="page">Dashboard</a>
+        <a href="/chat-demo.html">Demo chat</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Filter row: one control, above everything it affects -->
+    <div class="filters">
+      <label for="period">Period</label>
+      <select id="period">
+        <option value="7">Last 7 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option>
+      </select>
+      <span id="updated" class="muted small"></span>
+    </div>
+
+    <!-- KPI tiles -->
+    <section class="tiles" aria-label="Summary">
+      <div class="tile"><p class="tile-label">Items masked</p><p class="tile-value" id="kpi-masked">–</p><p class="tile-note">replaced by tags before the AI saw them</p></div>
+      <div class="tile"><p class="tile-label">Items blocked</p><p class="tile-value" id="kpi-blocked">–</p><p class="tile-note">never sent at all</p></div>
+      <div class="tile"><p class="tile-label">Bypass attempts</p><p class="tile-value" id="kpi-bypass">–</p><p class="tile-note">disguised data caught anyway</p></div>
+      <div class="tile"><p class="tile-label">Audit log</p><p class="tile-value status" id="kpi-audit">–</p><p class="tile-note" id="kpi-audit-note">hash chain + signed head</p></div>
+    </section>
+
+    <!-- Chart 1: per day -->
+    <section class="card" aria-labelledby="daily-title">
+      <div class="card-head">
+        <h2 id="daily-title">Items stopped per day</h2>
+        <ul class="legend" aria-label="Legend">
+          <li><span class="swatch masked"></span>Masked</li>
+          <li><span class="swatch blocked"></span>Blocked</li>
+        </ul>
+      </div>
+      <div class="chart" id="daily-chart"></div>
+      <details>
+        <summary>View as table</summary>
+        <div id="daily-table"></div>
+      </details>
+    </section>
+
+    <div class="two-col">
+      <!-- Chart 2: per category -->
+      <section class="card" aria-labelledby="category-title">
+        <h2 id="category-title">By kind of data</h2>
+        <div class="chart" id="category-chart"></div>
+      </section>
+
+      <!-- Per AI provider -->
+      <section class="card" aria-labelledby="provider-title">
+        <h2 id="provider-title">Stopped before reaching</h2>
+        <div id="provider-table"></div>
+      </section>
+    </div>
+
+    <!-- Evidence -->
+    <section class="card" aria-labelledby="evidence-title">
+      <h2 id="evidence-title">Evidence</h2>
+      <p class="muted small">Every entry is SHA-256 hash-chained and the newest one is signed with Ed25519. Editing or deleting any entry in the database is detected.</p>
+      <div class="actions">
+        <button id="verify-btn" type="button">Verify audit log now</button>
+        <button id="report-btn" type="button">Download signed DPDP report</button>
+      </div>
+      <div id="verify-result" aria-live="polite"></div>
+    </section>
+
+    <!-- Policies -->
+    <section class="card" aria-labelledby="policies-title">
+      <h2 id="policies-title">Policies</h2>
+      <p class="muted small">What happens to each kind of data. Changes apply immediately.</p>
+      <div id="policies"></div>
+    </section>
+
+    <!-- Recent activity -->
+    <section class="card" aria-labelledby="recent-title">
+      <h2 id="recent-title">Latest activity</h2>
+      <div id="recent"></div>
+    </section>
+  </main>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+  <script src="dashboard.js"></script>
+</body>
+</html>

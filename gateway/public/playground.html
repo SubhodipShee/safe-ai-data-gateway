@@ -1,0 +1,123 @@
+<!doctype html>
+<!--
+  playground.html: try the gateway in a browser (laptop or phone)
+  ───────────────────────────────────────────────────────────────
+  1. Type a prompt that contains sensitive data.
+  2. "Mask it"  → see exactly what the AI would receive (only tags).
+  3. "Restore"  → see the AI's reply with the real values put back.
+  The logic is in playground.js; the styling is in playground.css.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Safe AI Gateway</title>
+  <meta name="description" content="Masks Aadhaar, PAN, emails and API keys before text reaches an AI, then restores them in the reply.">
+  <link rel="stylesheet" href="playground.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">🛡️</span>
+        <div>
+          <h1>Safe AI Gateway</h1>
+          <p class="tagline">Use AI without leaking customer data, keys or IDs.</p>
+        </div>
+      </div>
+      <p class="demo-banner" role="note">Demo: use <strong>fake</strong> data only · <a href="/dashboard.html">Dashboard</a> · <a href="/chat-demo.html">Demo chat</a></p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- STEP 1: the user's prompt -->
+    <section class="card" aria-labelledby="step1-title">
+      <div class="card-head">
+        <span class="step">1</span>
+        <h2 id="step1-title">Your prompt</h2>
+      </div>
+      <p class="hint">Try one of the examples, or type your own.</p>
+      <div class="examples" id="examples"></div>
+      <label class="sr-only" for="prompt">Prompt</label>
+      <textarea id="prompt" rows="7" spellcheck="false"></textarea>
+      <div class="actions">
+        <button id="mask-btn" class="primary" type="button">Mask it</button>
+      </div>
+    </section>
+
+    <!-- STEP 2: what the AI receives -->
+    <section class="card" aria-labelledby="step2-title">
+      <div class="card-head">
+        <span class="step">2</span>
+        <h2 id="step2-title">What the AI receives</h2>
+      </div>
+      <div id="mask-result" aria-live="polite">
+        <p class="empty">Press <strong>Mask it</strong> to see the safe version.</p>
+      </div>
+    </section>
+
+    <!-- STEP 3: the AI's reply and the restored version -->
+    <section class="card" aria-labelledby="step3-title">
+      <div class="card-head">
+        <span class="step">3</span>
+        <h2 id="step3-title">The AI's reply → what you see</h2>
+      </div>
+      <p class="hint">
+        <strong>Ask the real AI</strong> sends your prompt through the gateway to a real AI, which only sees the tags.
+        Or edit the simulated reply below and restore it.
+      </p>
+      <div class="actions">
+        <button id="ask-ai-btn" class="primary" type="button" disabled>Ask the real AI</button>
+        <span id="ai-status" class="small"></span>
+      </div>
+      <label class="sr-only" for="reply">Simulated AI reply</label>
+      <textarea id="reply" rows="5" spellcheck="false" placeholder="Mask a prompt first…"></textarea>
+      <div class="actions">
+        <button id="unmask-btn" type="button" disabled>Restore simulated reply</button>
+      </div>
+      <div id="unmask-result" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 4: evidence (Phase 4) -->
+    <section class="card" aria-labelledby="step4-title">
+      <div class="card-head">
+        <span class="step">4</span>
+        <h2 id="step4-title">Evidence: tamper-proof audit log</h2>
+      </div>
+      <p class="hint">
+        Every catch is recorded in a hash-chained, signed log (counts only, never the data).
+        Try editing an entry in Atlas, then verify again.
+      </p>
+      <div class="actions">
+        <button id="verify-btn" type="button">Verify audit log</button>
+        <button id="report-btn" type="button">DPDP report (30 days)</button>
+      </div>
+      <div id="audit-result" aria-live="polite"></div>
+    </section>
+
+    <!-- How it works -->
+    <section class="card how" aria-labelledby="how-title">
+      <h2 id="how-title">What just happened?</h2>
+      <ol>
+        <li><strong>Detected</strong> emails, phones, Aadhaar (Verhoeff checksum), PAN, GSTIN (mod-36 checksum), UPI, bank details and API keys, even when disguised with Hindi/Bengali digits, invisible characters or look-alike letters.</li>
+        <li><strong>Recognised</strong> people's names with a small AI model running <em>inside</em> the gateway (offline), and addresses by their PIN code.</li>
+        <li><strong>Replaced</strong> each value with a tag. The same value always gets the same tag.</li>
+        <li><strong>Encrypted</strong> the real values with AES-256-GCM, using a separate key per session, and stored them for 24 hours.</li>
+        <li><strong>Restored</strong> the tags in the reply, so you see a normal answer while the AI never saw your data.</li>
+        <li><strong>Recorded</strong> what was caught in a SHA-256 hash chain with an Ed25519-signed head: editing or deleting any entry is detected.</li>
+      </ol>
+      <div class="session-row">
+        <span>Session <code id="session-id"></code></span>
+        <button id="clear-btn" type="button" class="ghost">Delete my session data</button>
+      </div>
+      <p id="clear-result" class="small" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    Free, self-hosted AI data-leak protection · Node.js · MongoDB Atlas · AES-256-GCM
+  </footer>
+
+  <script src="playground.js"></script>
+</body>
+</html>
