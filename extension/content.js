@@ -47,9 +47,10 @@
       conversationId: () => location.pathname.match(/\/app\/([\w-]+)/)?.[1] ?? null,
     },
     {
-      // The gateway's own demo chat page (gateway/public/chat-demo.html): a backup demo.
+      // The gateway's own demo chat page (gateway/public/chat-demo.html): a backup demo,
+      // on the laptop or on the live site.
       name: 'Demo chat',
-      hosts: ['127.0.0.1', 'localhost'],
+      hosts: ['127.0.0.1', 'localhost', 'safe-ai-gateway.onrender.com'],
       source: 'chat-demo',
       editor: '#composer',
       sendButton: '#send',
@@ -93,6 +94,11 @@
 
   let settings = { enabled: true, failMode: 'block', showRealValues: true };
   ask({ type: 'settings' }).then((s) => { settings = s; });
+
+  // WAKE UP the gateway as soon as the chat page opens. The free online server
+  // sleeps after 15 minutes without visitors and needs about a minute to start;
+  // this way it's usually awake by the time you've typed your first message.
+  ask({ type: 'health' });
   // When a setting changes in the popup (e.g. "Show real values"), update the page right away.
   chrome.storage.onChanged.addListener(() => ask({ type: 'settings' }).then((s) => {
     settings = s;
@@ -297,7 +303,8 @@
           toast('⚠ Gateway unreachable: sent WITHOUT protection', 'warn');
           return clickSendWhenReady(editor);
         }
-        return toast('⛔ Gateway unreachable: message NOT sent (your text is still in the box)', 'bad', 6000);
+        return toast('⛔ Gateway unreachable: message NOT sent (your text is still in the box). '
+          + 'If it\'s the free online server, it\'s probably waking up: try again in about a minute.', 'bad', 9000);
       }
 
       // ---- Blocked by policy ----

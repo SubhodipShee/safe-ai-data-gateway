@@ -69,7 +69,7 @@ keyed hashes and counts. The master key lives only in the gateway's environment.
 
 ## Three ways to use it
 
-1. **Browser extension**: protects people using chatgpt.com, claude.ai and gemini.google.com directly.
+1. **Browser extension**: protects people using chatgpt.com, claude.ai and gemini.google.com directly. It is preset to the live demo gateway. [Install guide](extension/README.md) (2 minutes, no setup).
 2. **API proxy**: OpenAI-compatible `POST /v1/chat/completions`. Existing code changes **one line**, the base URL.
 3. **Playground + dashboard**: try it in any browser, and see what was stopped, by whom and where.
 
@@ -103,7 +103,7 @@ Then open:
 - **http://127.0.0.1:7000/dashboard.html**: dashboard, policies, audit verification
 - **http://127.0.0.1:7000/chat-demo.html**: demo chat for the extension
 
-**Browser extension:** `chrome://extensions` → *Developer mode* → *Load unpacked* → select the `extension` folder.
+**Browser extension:** `chrome://extensions` → *Developer mode* → *Load unpacked* → select the `extension` folder. It points to the live demo gateway by default; for your own, set `http://127.0.0.1:7000` in its popup.
 
 ## Deploy online (free)
 

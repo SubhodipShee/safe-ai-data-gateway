@@ -17,6 +17,8 @@ async function showStatus() {
     status.className = 'status ok';
   } else {
     status.textContent = `✘ ${data.error || `Gateway problem (database: ${data.db ?? 'unknown'})`}`;
+    // The free online server sleeps when nobody uses it; opening this popup wakes it.
+    if ($('gateway-url').value.includes('onrender.com')) status.textContent += ' · probably waking up, reopen in about a minute';
     status.className = 'status bad';
   }
 }

@@ -16,7 +16,9 @@
 
 const DEFAULT_SETTINGS = {
   enabled: true,
-  gatewayUrl: 'http://127.0.0.1:7000',
+  // The public demo gateway (Phase 10), so the extension works right after installing.
+  // Running your own gateway? Change it in the popup, e.g. http://127.0.0.1:7000
+  gatewayUrl: 'https://safe-ai-gateway.onrender.com',
   // If the gateway can't be reached: 'block' = don't send (safe, recommended)
   //                                  'allow' = send the original text (unsafe)
   failMode: 'block',
