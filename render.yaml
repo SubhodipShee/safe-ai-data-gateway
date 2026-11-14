@@ -31,11 +31,11 @@ services:
       # HTTPS redirect, rate limits, admin key; see src/security.js).
       - key: HOST
         value: 0.0.0.0
-      # Requests pass Cloudflare and two Render proxies: 3 hops. Measured on the live
-      # site (X-Forwarded-For = "<visitor>, <Cloudflare>, <Render internal>"). With
-      # fewer, the rate limits counted Cloudflare servers instead of visitors.
-      - key: TRUST_PROXY_HOPS
-        value: "3"
+      # The visitor's real IP, for the rate limits. Cloudflare (in front of every
+      # Render site) sets True-Client-IP. Measured on the live site: it's always the
+      # real address, while the X-Forwarded-For chain changes length.
+      - key: CLIENT_IP_HEADER
+        value: true-client-ip
       # Paste the SAME values as in your gateway/.env (Render asks for them):
       - key: MONGODB_URI
         sync: false

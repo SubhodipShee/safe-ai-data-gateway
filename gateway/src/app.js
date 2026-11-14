@@ -53,21 +53,18 @@ const publicFolder = path.join(path.dirname(fileURLToPath(import.meta.url)), '..
  * @param {string} [options.providerKey] e.g. 'groq' (for the audit log)
  * @param {boolean} [options.isPublic=false] true when hosted online (Phase 10): HTTPS + rate limits
  * @param {string} [options.adminKey]   if set, changing policies needs "Authorization: Bearer <key>"
- * @param {number} [options.trustProxyHops=1] proxies in front of the gateway (Render: 2)
+ * @param {string} [options.clientIpHeader] header with the visitor's real IP (Render: 'true-client-ip')
  */
-export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, providerKey = 'none', isPublic = false, adminKey, trustProxyHops = 1 }) {
+export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, providerKey = 'none', isPublic = false, adminKey, clientIpHeader }) {
   const app = express();
   const masker = createMasker({ vault, auditChain, codeGuard, nameFinder });
 
   // Don't announce "X-Powered-By: Express" (tells attackers less).
   app.disable('x-powered-by');
 
-  // When hosted, requests arrive through proxies that handle HTTPS (Render: Cloudflare,
-  // then two Render proxies = 3, measured). Each proxy adds the address it received the request
-  // from to the X-Forwarded-For header. Trusting exactly that many proxies gives the
-  // visitor's REAL address (used by the rate limits); anything a visitor writes into
-  // the header themselves sits further left and is ignored.
-  app.set('trust proxy', trustProxyHops);
+  // When hosted, requests arrive through a proxy that handles HTTPS. On Render the
+  // rate limits find the visitor through the clientIpHeader instead (see security.js).
+  app.set('trust proxy', 1);
 
   // ---- Protections (Phase 10, see security.js) ----
   // Security headers on every response, also on the laptop, so a page that would
@@ -76,7 +73,7 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
   if (isPublic) {
     app.use(redirectToHttps);
     // Rate limits, checked BEFORE the request body is read.
-    const limits = createRateLimits();
+    const limits = createRateLimits({ clientIpHeader });
     app.use(['/mask', '/detect', '/session'], limits.mask);
     app.use('/unmask', limits.unmask);
     app.use('/v1', limits.aiPerVisitor, limits.aiTotalPerDay);

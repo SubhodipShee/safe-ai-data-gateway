@@ -19,7 +19,7 @@
 
 import { createHash, timingSafeEqual } from 'node:crypto';
 import helmet from 'helmet';
-import { rateLimit } from 'express-rate-limit';
+import { rateLimit, ipKeyGenerator } from 'express-rate-limit';
 
 // -----------------------------------------------------------------------------
 // 1. Security headers
@@ -61,15 +61,30 @@ export function redirectToHttps(req, res, next) {
 // -----------------------------------------------------------------------------
 // 3. Rate limits (counted per visitor IP address, kept in memory)
 // -----------------------------------------------------------------------------
+/**
+ * WHO is the visitor? Their IP address. Behind Render, the connection comes from
+ * Render's proxies, and the visitor's real address is in a header added by
+ * Cloudflare (which sits in front of every Render site): "True-Client-IP".
+ *
+ * MEASURED on the live site: the X-Forwarded-For chain changes length from request
+ * to request, so counting proxies picked a Cloudflare server as the "visitor".
+ * True-Client-IP was the real address every time, and Cloudflare overwrites any
+ * value a visitor sends (also measured).
+ * @param {string|undefined} clientIpHeader  e.g. 'true-client-ip' (Render); unset = the connection's address
+ */
+function visitorKey(clientIpHeader) {
+  return (req) => ipKeyGenerator((clientIpHeader && req.get(clientIpHeader)) || req.ip);
+}
+
 /** Builds one limiter. `limit` requests are allowed per `minutes`. */
-function limiter({ limit, minutes, what, perVisitor = true }) {
+function limiter({ limit, minutes, what, perVisitor = true, clientIpHeader }) {
   return rateLimit({
     windowMs: minutes * 60_000,
     limit,
     standardHeaders: 'draft-8', // tells well-behaved clients how long to wait (RateLimit header)
     legacyHeaders: false,
     // perVisitor=false → ONE shared counter for everybody (protects a total quota).
-    ...(perVisitor ? {} : { keyGenerator: () => 'everyone' }),
+    keyGenerator: perVisitor ? visitorKey(clientIpHeader) : () => 'everyone',
     message: { error: `Too many ${what}. Please wait a little and try again.` },
   });
 }
@@ -81,14 +96,15 @@ function limiter({ limit, minutes, what, perVisitor = true }) {
  *   - real AI: low per visitor, AND a daily total so the free Groq quota can't be used up
  *   - admin: few attempts, so nobody can guess the admin key
  */
-export function createRateLimits() {
+export function createRateLimits({ clientIpHeader } = {}) {
+  const per = { clientIpHeader };
   return {
-    mask: limiter({ limit: 30, minutes: 1, what: 'requests to mask text' }),
-    unmask: limiter({ limit: 300, minutes: 1, what: 'restore requests' }),
-    read: limiter({ limit: 60, minutes: 1, what: 'requests' }),
-    aiPerVisitor: limiter({ limit: 6, minutes: 1, what: 'AI requests' }),
+    mask: limiter({ limit: 30, minutes: 1, what: 'requests to mask text', ...per }),
+    unmask: limiter({ limit: 300, minutes: 1, what: 'restore requests', ...per }),
+    read: limiter({ limit: 60, minutes: 1, what: 'requests', ...per }),
+    aiPerVisitor: limiter({ limit: 6, minutes: 1, what: 'AI requests', ...per }),
     aiTotalPerDay: limiter({ limit: 300, minutes: 24 * 60, what: 'AI requests today (demo limit)', perVisitor: false }),
-    admin: limiter({ limit: 20, minutes: 15, what: 'admin attempts' }),
+    admin: limiter({ limit: 20, minutes: 15, what: 'admin attempts', ...per }),
   };
 }
 

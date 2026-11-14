@@ -80,13 +80,11 @@ export const config = Object.freeze({
   isPublic,
   adminKey,
 
-  // How many proxies sit between the visitor and the gateway. Needed to find the
-  // visitor's real IP address for the rate limits.
-  //   laptop / Cloudflare tunnel: 1
-  //   Render: 3. MEASURED on the live site, X-Forwarded-For arrives as
-  //   "<visitor>, <Cloudflare server>, <Render internal>", plus Render's last hop.
-  //   With fewer, a Cloudflare server counted as the "visitor", so limits didn't work.
-  trustProxyHops: Number(process.env.TRUST_PROXY_HOPS) || 1,
+  // The header that holds the visitor's real IP address, for the rate limits.
+  //   laptop: not set (the connection's own address is used)
+  //   Render: true-client-ip (set by Cloudflare, which sits in front of every
+  //   Render site; measured to be correct and not fakeable, see security.js)
+  clientIpHeader: process.env.CLIENT_IP_HEADER?.trim().toLowerCase() || undefined,
 
   mongoUri,
   masterKey,
