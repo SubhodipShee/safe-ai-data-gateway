@@ -107,6 +107,18 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
     });
   });
 
+  // ---- TEMPORARY (Phase 10 live check): what the gateway sees about YOUR request's
+  // address chain, to set TRUST_PROXY_HOPS correctly. Removed after the check. ----
+  app.get('/debug/client-ip', (req, res) => {
+    res.json({
+      trustProxyHops,
+      ipUsedForRateLimits: req.ip,
+      forwardedFor: req.get('x-forwarded-for') ?? null,
+      trueClientIp: req.get('true-client-ip') ?? null,
+      cfConnectingIp: req.get('cf-connecting-ip') ?? null,
+    });
+  });
+
   // ---- POST /detect (Phase 1): types and positions only, never the values ----
   app.post('/detect', (req, res) => {
     const text = req.body?.text;
