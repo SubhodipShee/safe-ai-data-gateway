@@ -6,8 +6,7 @@ tags like `[[EMAIL_1]]`. The AI only sees the tags; on **your** screen the real 
 highlighted in green.
 
 > **This is a demo. Please type fake data only.**
-> The extension is already connected to the public demo gateway,
-> https://safe-ai-gateway.onrender.com, so there's nothing to set up.
+> It's connected to the gateway at https://safe-ai-gateway.onrender.com. There's nothing to set up: install it and use it.
 
 ## Install (2 minutes, Chrome or Edge)
 
@@ -42,7 +41,6 @@ Its right-hand panel shows exactly what the "AI server" received.
 - **If the gateway can't be reached, nothing is sent** (your text stays in the box). That's on purpose: it's safer to stop than to leak.
 - Only what you **type or paste** into the chat box is checked. File uploads aren't checked yet.
 - With the demo gateway, the masked values are stored **encrypted** (AES-256) and deleted automatically after 24 hours. That's still another person's server, so: **fake data only**.
-- To use your own gateway instead, put its address in the popup (e.g. `http://127.0.0.1:7000`) and click **Save**.
 
 ## Remove it
 

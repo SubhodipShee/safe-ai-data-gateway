@@ -1,20 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Safe AI Gateway",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "Masks Aadhaar, PAN, emails, keys and private code before you send them to ChatGPT, Claude or Gemini, and restores them in the reply.",
   "permissions": [
     "storage"
   ],
   "host_permissions": [
-    "http://127.0.0.1/*",
-    "http://localhost/*",
-    "https://*.onrender.com/*",
-    "https://*.trycloudflare.com/*"
-  ],
-  "optional_host_permissions": [
-    "https://*/*",
-    "http://*/*"
+    "https://safe-ai-gateway.onrender.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -26,8 +19,6 @@
         "https://chat.openai.com/*",
         "https://claude.ai/*",
         "https://gemini.google.com/*",
-        "http://127.0.0.1/chat-demo.html",
-        "http://localhost/chat-demo.html",
         "https://safe-ai-gateway.onrender.com/chat-demo.html"
       ],
       "js": [

@@ -6,7 +6,7 @@
   Interviewers can open the same link on their phones.
 - **Or on the laptop:** `cd gateway` → `npm run dev`. Wait for `[db] connected` and `[ai] name detection: ready`.
 - Open 3 tabs: the **playground** (`/`), the **dashboard** (`/dashboard.html`) and **chatgpt.com**.
-- Extension popup → **Gateway URL** = the same address you're using (Render or `http://127.0.0.1:7000`).
+- The extension always uses the live gateway, so wake it first (step above). The popup should say **✔ Connected**.
 - On the Render site, the dashboard's policies are locked: press **Unlock** and paste the `ADMIN_KEY` from Render → Environment.
 - In the extension popup: Protection **on**, Show real values **on**.
 - Have **Atlas → Data Explorer → safe-ai-gateway → auditlogs** open in another tab (for the tamper demo).

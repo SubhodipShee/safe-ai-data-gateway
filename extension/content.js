@@ -47,10 +47,9 @@
       conversationId: () => location.pathname.match(/\/app\/([\w-]+)/)?.[1] ?? null,
     },
     {
-      // The gateway's own demo chat page (gateway/public/chat-demo.html): a backup demo,
-      // on the laptop or on the live site.
+      // The gateway's own demo chat page (gateway/public/chat-demo.html): a backup demo.
       name: 'Demo chat',
-      hosts: ['127.0.0.1', 'localhost', 'safe-ai-gateway.onrender.com'],
+      hosts: ['safe-ai-gateway.onrender.com'],
       source: 'chat-demo',
       editor: '#composer',
       sendButton: '#send',

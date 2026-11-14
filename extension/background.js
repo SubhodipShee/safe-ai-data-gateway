@@ -10,15 +10,18 @@
 //
 //   content.js ──message──► background.js ──fetch──► gateway (/mask, /unmask, /health)
 //
-// It also keeps the settings (gateway address, on/off, what to do if the gateway
+// It also keeps the settings (on/off, what to do if the gateway
 // is down) and simple counters for the popup.
 // =============================================================================
 
+// The gateway this extension talks to. FIXED: users just install the extension and
+// it works; there is nothing to set up and no way to point it somewhere else.
+// (Developers running their own gateway change this line AND "host_permissions"
+// in manifest.json, e.g. to http://127.0.0.1:7000.)
+const GATEWAY_URL = 'https://safe-ai-gateway.onrender.com';
+
 const DEFAULT_SETTINGS = {
   enabled: true,
-  // The public demo gateway (Phase 10), so the extension works right after installing.
-  // Running your own gateway? Change it in the popup, e.g. http://127.0.0.1:7000
-  gatewayUrl: 'https://safe-ai-gateway.onrender.com',
   // If the gateway can't be reached: 'block' = don't send (safe, recommended)
   //                                  'allow' = send the original text (unsafe)
   failMode: 'block',
@@ -31,14 +34,16 @@ const REQUEST_TIMEOUT_MS = 15_000;
 /** Current settings (saved ones, falling back to the defaults). */
 async function getSettings() {
   const saved = await chrome.storage.local.get(Object.keys(DEFAULT_SETTINGS));
-  return { ...DEFAULT_SETTINGS, ...saved };
+  return { ...DEFAULT_SETTINGS, ...saved, gatewayUrl: GATEWAY_URL };
 }
+
+// Older versions let users type their own address. Forget any saved one on update.
+chrome.runtime.onInstalled.addListener(() => chrome.storage.local.remove('gatewayUrl'));
 
 /** Calls the gateway. Always returns { ok, status, data } and never throws. */
 async function callGateway(method, path, body) {
-  const { gatewayUrl } = await getSettings();
   try {
-    const response = await fetch(gatewayUrl.replace(/\/+$/, '') + path, {
+    const response = await fetch(GATEWAY_URL + path, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: body ? JSON.stringify(body) : undefined,
@@ -47,7 +52,7 @@ async function callGateway(method, path, body) {
     const data = await response.json().catch(() => ({}));
     return { ok: response.ok, status: response.status, data };
   } catch {
-    return { ok: false, status: 0, data: { error: `Gateway unreachable at ${gatewayUrl}` } };
+    return { ok: false, status: 0, data: { error: 'Gateway unreachable' } };
   }
 }
 
