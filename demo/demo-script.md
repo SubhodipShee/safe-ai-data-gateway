@@ -1,7 +1,7 @@
 # 5-minute interview demo
 
 **Before the interview (2 minutes):**
-- **Online:** open `https://<your-service>.onrender.com/health` and wait until it shows `"db":"connected"`.
+- **Online:** open `https://safe-ai-gateway.onrender.com/health` and wait until it shows `"db":"connected"`.
   The free server sleeps after 15 minutes with no visitors and needs about a minute to wake up.
   Interviewers can open the same link on their phones.
 - **Or on the laptop:** `cd gateway` → `npm run dev`. Wait for `[db] connected` and `[ai] name detection: ready`.
@@ -51,7 +51,7 @@ Dashboard → **Verify audit log now** → ✔ Intact.
 
 ## 7. Close (15 s)
 > "Free, self-hosted, India-first: Aadhaar Verhoeff, GSTIN checksums, local AI for names, and
-> 248 automated tests. Developers can use it too: it's an OpenAI-compatible proxy, one-line change."
+> 250 automated tests. Developers can use it too: it's an OpenAI-compatible proxy, one-line change."
 
 ---
 

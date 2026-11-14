@@ -2,6 +2,8 @@
 
 **Use ChatGPT, Claude and Gemini at work without leaking customer data, keys or source code.**
 
+**Live demo:** https://safe-ai-gateway.onrender.com (free server: the first visit after a quiet period takes about a minute to wake up. Use fake data only.)
+
 Employees paste customer details, API keys and private code into AI chatbots every day.
 This gateway and its browser extension replace the sensitive parts with tags like `[[EMAIL_1]]`
 *before* the text leaves the company. The AI then answers using those tags, and the real values
@@ -88,7 +90,7 @@ Put the generated key in `.env` as `MASTER_KEY=`, then add your `MONGODB_URI` (a
 | Command | What it does |
 |---|---|
 | `npm run dev` | Start the gateway on http://127.0.0.1:7000 (reloads on save) |
-| `npm test` | Run the 248 automated tests (some against your Atlas test databases) |
+| `npm test` | Run the 250 automated tests (some against your Atlas test databases) |
 | `npm run check-db` | Check the Atlas connection without printing the password |
 | `npm run check-ai` | Check the AI key and list the models it can use |
 | `npm run register-code -- ../demo/acme-payments` | Protect a code folder (only fingerprints are stored) |
@@ -145,7 +147,7 @@ gateway/
     masker.js      detect → policy → vault → replace → audit
     vault.js       encrypted storage of real values
   public/          playground, dashboard, demo chat
-  test/            248 tests
+  test/            250 tests
 extension/         Chrome extension (Manifest V3)
 demo/              fake "ACME Payments" repo + demo script
 PLAN.md            full design and build log

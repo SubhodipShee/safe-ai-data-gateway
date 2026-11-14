@@ -80,6 +80,13 @@ export const config = Object.freeze({
   isPublic,
   adminKey,
 
+  // How many proxies sit between the visitor and the gateway. Needed to find the
+  // visitor's real IP address for the rate limits.
+  //   laptop / Cloudflare tunnel: 1
+  //   Render: 2 (Cloudflare, then Render's own proxy). MEASURED on the live site:
+  //   with 1, every Cloudflare server counted as a "visitor", so limits didn't work.
+  trustProxyHops: Number(process.env.TRUST_PROXY_HOPS) || 1,
+
   mongoUri,
   masterKey,
   dnsServers,

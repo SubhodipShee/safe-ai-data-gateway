@@ -85,6 +85,9 @@ describe('PERSON (local AI model)', { skip: SKIP_WITHOUT_MODEL }, () => {
     assert.deepEqual(await names('ACME Payments and Infosys signed a contract in Bengaluru.'), []);
     assert.deepEqual(await names('const user = getUserById(id); if (!user) throw new Error("not found");'), []);
   });
+  test('NOT names: ID words like "Aadhaar" before a number (found on the live site)', async () => {
+    assert.deepEqual(await names('Refund Rahul Verma, rahul@gmail.com, PAN ABCPE1234F, Aadhaar 2345 6789 0124'), ['Rahul Verma']);
+  });
   test('long texts are split into chunks and names are found in every chunk', async () => {
     const filler = 'The quarterly numbers look fine and nothing else needs review. '.repeat(40);
     const found = await names(`Rahul Verma wrote this. ${filler} Signed, Priya Shah.`);

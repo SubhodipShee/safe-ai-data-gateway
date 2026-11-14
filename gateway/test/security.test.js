@@ -62,6 +62,24 @@ describe('online (public) mode', () => {
     assert.match((await refused.json()).error, /Too many/);
   });
 
+  test('Render (2 proxies): limits count the REAL visitor, not Cloudflare, and fake headers are ignored', async () => {
+    const call = await startGateway({ isPublic: true, adminKey: ADMIN_KEY, trustProxyHops: 2 });
+    // What Render's chain looks like: "<anything the visitor wrote>, <visitor>, <Cloudflare server>"
+    const fromVisitor = (forwardedFor) => call('/detect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': forwardedFor },
+      body: JSON.stringify({ text: 'x' }),
+    });
+    const remaining = (response) => Number(/r=(\d+)/.exec(response.headers.get('ratelimit'))[1]);
+
+    const first = remaining(await fromVisitor('5.5.5.5, 104.22.0.1'));
+    // Same visitor, a DIFFERENT Cloudflare server, and a fake address added → same counter.
+    const second = remaining(await fromVisitor('9.9.9.9, 5.5.5.5, 104.22.0.2'));
+    assert.equal(second, first - 1);
+    // A different visitor gets their own counter.
+    assert.equal(remaining(await fromVisitor('6.6.6.6, 104.22.0.1')), first);
+  });
+
   test('changing a policy needs the right admin key', async () => {
     const call = await startGateway({ isPublic: true, adminKey: ADMIN_KEY });
     assert.equal((await putPolicy(call)).status, 401, 'no key');

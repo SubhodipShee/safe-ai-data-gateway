@@ -53,18 +53,21 @@ const publicFolder = path.join(path.dirname(fileURLToPath(import.meta.url)), '..
  * @param {string} [options.providerKey] e.g. 'groq' (for the audit log)
  * @param {boolean} [options.isPublic=false] true when hosted online (Phase 10): HTTPS + rate limits
  * @param {string} [options.adminKey]   if set, changing policies needs "Authorization: Bearer <key>"
+ * @param {number} [options.trustProxyHops=1] proxies in front of the gateway (Render: 2)
  */
-export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, providerKey = 'none', isPublic = false, adminKey }) {
+export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, providerKey = 'none', isPublic = false, adminKey, trustProxyHops = 1 }) {
   const app = express();
   const masker = createMasker({ vault, auditChain, codeGuard, nameFinder });
 
   // Don't announce "X-Powered-By: Express" (tells attackers less).
   app.disable('x-powered-by');
 
-  // When hosted (Render, Cloudflare), requests arrive through ONE proxy that handles
-  // HTTPS. This tells Express to trust that proxy's information about the real visitor
-  // (their IP address, used by the rate limits, and whether they used https).
-  app.set('trust proxy', 1);
+  // When hosted, requests arrive through proxies that handle HTTPS (Render: Cloudflare,
+  // then Render's own proxy = 2). Each proxy adds the address it received the request
+  // from to the X-Forwarded-For header. Trusting exactly that many proxies gives the
+  // visitor's REAL address (used by the rate limits); anything a visitor writes into
+  // the header themselves sits further left and is ignored.
+  app.set('trust proxy', trustProxyHops);
 
   // ---- Protections (Phase 10, see security.js) ----
   // Security headers on every response, also on the laptop, so a page that would

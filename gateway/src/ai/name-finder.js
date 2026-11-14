@@ -47,6 +47,17 @@ export const MAX_NAME_SCAN_CHARS = 20_000;
 // This filters out model mistakes on code like "getUser_id2".
 const LOOKS_LIKE_A_NAME = /^\p{Lu}[\p{L}.'’-]*(?:\s+[\p{L}.'’-]+){0,4}$/u;
 
+// Words the model sometimes mistakes for a person, e.g. "Aadhaar" in
+// "Aadhaar 2345 6789 0124" (seen on the live site: confidence 0.97). A "name"
+// made ONLY of these words is ignored. "Peter Pan" is still a name, because
+// "Peter" isn't in the list.
+const NOT_NAME_WORDS = new Set([
+  'aadhaar', 'aadhar', 'adhaar', 'uid', 'uidai', 'pan', 'gst', 'gstin', 'upi', 'ifsc',
+  'epic', 'voter', 'passport', 'licence', 'license', 'dl', 'account', 'acct', 'bank',
+  'phone', 'mobile', 'email', 'pin', 'pincode', 'otp', 'cvv', 'card', 'id',
+]);
+const isOnlyIdWords = (name) => name.toLowerCase().split(/[\s.'’-]+/).filter(Boolean).every((w) => NOT_NAME_WORDS.has(w));
+
 /**
  * Splits text into chunks of about CHUNK_CHARS, at line breaks or spaces.
  * @returns {{ text: string, offset: number }[]}  offset = where the chunk starts in the full text
@@ -192,7 +203,7 @@ export function createNameFinder({ cacheDir = DEFAULT_MODEL_CACHE_DIR, enabled =
         searchFrom = end;
 
         const cleanValue = chunk.text.slice(start, end);
-        if (!LOOKS_LIKE_A_NAME.test(cleanValue)) continue;
+        if (!LOOKS_LIKE_A_NAME.test(cleanValue) || isOnlyIdWords(cleanValue)) continue;
 
         // Positions: chunk → clean copy → ORIGINAL text.
         const original = mapSpan(clean, chunk.offset + start, chunk.offset + end);
