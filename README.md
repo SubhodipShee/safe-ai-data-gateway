@@ -2,6 +2,8 @@
 
 **Use ChatGPT, Claude and Gemini at work without leaking customer data, keys or source code.**
 
+Built by **[Subhodip Shee](https://github.com/SubhodipShee)**.
+
 **Live demo:** https://safe-ai-gateway.onrender.com (free server: the first visit after a quiet period takes about a minute to wake up. Use fake data only.)
 
 Employees paste customer details, API keys and private code into AI chatbots every day.
@@ -175,3 +177,5 @@ identifier detection, keyed source-code fingerprinting, and tamper-evident DPDP 
 
 ---
 *Technical evidence to support DPDP Act, 2023 compliance. Not legal advice.*
+
+© 2026 Subhodip Shee · [MIT License](LICENSE)

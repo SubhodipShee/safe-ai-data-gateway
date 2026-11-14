@@ -129,3 +129,5 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
 
 .foot { color: var(--muted); font-size: 13px; text-align: center; padding: 8px 16px 28px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.foot a { color: inherit; font-weight: 600; }

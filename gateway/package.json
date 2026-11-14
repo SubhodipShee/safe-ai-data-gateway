@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Masks PII and secrets before prompts reach AI chatbots, then restores them in replies.",
+  "author": "Subhodip Shee (https://github.com/SubhodipShee)",
   "type": "module",
   "main": "src/server.js",
   "scripts": {

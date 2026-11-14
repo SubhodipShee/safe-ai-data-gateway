@@ -142,3 +142,7 @@ button { font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 8px; 
 .admin-bar input { font: inherit; font-size: 14px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); min-width: 0; flex: 1 1 160px; max-width: 260px; }
 button.ghost { background: transparent; color: var(--accent); }
 select:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ---- Footer: author credit ---- */
+.foot { color: var(--muted); font-size: 13px; text-align: center; padding: 8px 16px 28px; }
+.foot a { color: inherit; font-weight: 600; }
