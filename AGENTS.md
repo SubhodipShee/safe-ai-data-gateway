@@ -103,6 +103,8 @@ gateway/
     agent/             Phase 12: the coding-agent proxy's helpers
       mask-conversation.js  masks every text in an agent conversation (messages, tool results = files, tool calls); remembers masked texts by SHA-256
       stream-restorer.js    restores tags in a STREAMED answer, even when a tag is cut across chunks; JSON mode for tool-call arguments
+      anthropic-conversation.js  Phase 14: masks Claude Code's Anthropic-format requests (system, messages, tool_use, tool_result;
+                            thinking untouched) and restores answers/streams event by event
     ai/
       name-finder.js   PERSON via local BERT-NER (transformers.js, 1 CPU thread, model in gateway/.models)
       llm-client.js    AI providers for the proxy: groq (default), gemini, ollama, custom
@@ -117,7 +119,7 @@ gateway/
       audit-chain.js   append (batched, ordered, retried) and verify() the hash chain
       dpdp-report.js   CATEGORIES, AI_PROVIDERS, buildDpdpReport (signed, counts only)
     models/            Mongoose: Session, VaultEntry (TTL 24 h), AuditLog (TTL 90 d), AuditHead, Policy, CodeFile
-    routes/            mask.js unmask.js session.js audit.js admin.js chat-proxy.js agent-proxy.js
+    routes/            mask.js unmask.js session.js audit.js admin.js chat-proxy.js agent-proxy.js anthropic-proxy.js
   public/              playground.*, dashboard.*, chat-demo.* (plain HTML/CSS/JS, SVG charts, no frameworks)
   scripts/             check-db, check-ai, try-detect, vault-demo, tamper-demo, register-code, download-model, zip-extension
   test/                node:test files, one per area (see section 6)
@@ -160,6 +162,7 @@ PLAN.md                full design and phase-by-phase build log
 | POST | `/v1/chat/completions` | OpenAI-compatible proxy for the playground/apps (no streaming, text only) |
 | POST | `/agent/v1/chat/completions` | Proxy for AI CODING AGENTS: tools, tool results (files) and streaming; up to 20 MB. Online it's OFF unless `AGENT_KEY` is set (then `Authorization: Bearer <AGENT_KEY>`) |
 | GET | `/agent/v1/models` | the model list some agents ask for |
+| POST | `/agent/anthropic/v1/messages` (+ `/count_tokens`, `GET /v1/models`, `HEAD /api/hello`) | Proxy for **Claude Code** (`ANTHROPIC_BASE_URL=…/agent/anthropic`). Forwards the user's Claude login and all `anthropic-*` headers/body fields unchanged; masks text only. Online: off unless `AGENT_KEY`, sent as `X-Safe-AI-Key` |
 | GET | `/api/audit/verify` | re-check the hash chain |
 | GET | `/api/audit/public-key` | Ed25519 public key |
 | GET | `/api/reports/dpdp?from&to` | signed DPDP evidence report (counts only) |
@@ -248,9 +251,13 @@ database code (that's why the tag rules live in `gateway/src/tags.js`). Gateway 
 ### H. The coding-agent proxy (`/agent`, Phase 12)
 - Use it from an agent's "OpenAI-compatible" provider: Base URL `http://127.0.0.1:7000/agent/v1`, any API key on the laptop.
 - Keep the gateway on the laptop for coding agents (fast, private). On Render it stays off unless `AGENT_KEY` is set.
-- Every text in the conversation is masked (`agent/mask-conversation.js`); new formats (Anthropic Messages for Claude Code,
-  OpenAI Responses for Codex) should reuse it and `agent/stream-restorer.js`, as new routes next to `agent-proxy.js`.
-- Tests: `test/agent.test.js` (fake AI provider: proves files and messages never reach it unmasked, with and without streaming).
+- Every text in the conversation is masked (`agent/mask-conversation.js` → `createTextMasker`). Claude Code's format lives in
+  `agent/anthropic-conversation.js` + `routes/anthropic-proxy.js`. A future OpenAI "Responses" format (Codex) should reuse the same pieces.
+- Claude Code rules (Anthropic's gateway guide): forward `Authorization`, `anthropic-*` headers and every body field unchanged;
+  never modify `thinking` blocks (signed); relay the stream event by event (pings included); return errors and rate-limit headers
+  unchanged. Claude Code's own instructions are masked with `findNames: false` ("Claude" isn't a person).
+- Tests: `test/agent.test.js` and `test/claude-code.test.js` (fake AI provider / fake Anthropic: prove files and messages never
+  reach them unmasked, with and without streaming, and that logins, thinking and cache_control pass through unchanged).
 
 ### F. Change a web page
 Edit `gateway/public/*.html|css|js`. No inline scripts (CSP). Colours are CSS variables with light and dark

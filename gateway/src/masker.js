@@ -108,20 +108,22 @@ export function createMasker({ vault, auditChain, codeGuard, nameFinder }) {
    * @param {string} [input.source]   where it came from, e.g. "chatgpt.com" (for the audit log)
    * @param {boolean} [input.audit=true]  false = don't log (used for chat HISTORY that was
    *                                    already logged when it was first sent; see chat-proxy.js)
+   * @param {boolean} [input.findNames=true]  false = skip the name-finding AI (used for Claude Code's
+   *                                    own instructions, where it would wrongly mask "Claude"; Phase 14)
    * @returns {Promise<object>} one of:
    *   { blocked: false, maskedText: "…[[EMAIL_1]]…", items: [{ type, label, placeholder, obfuscated }],
    *     summary, bypassAttempts }
    *   { blocked: true,  blockedTypes: { PRIVATE_KEY: 1 }, bypassAttempts }
    *   (bypassAttempts = how many values were disguised, e.g. Devanagari digits)
    */
-  async function maskText({ sessionId, text, source, audit = true }) {
+  async function maskText({ sessionId, text, source, audit = true, findNames = true }) {
     // ---- Step 1: find everything sensitive ----
     // Personal data and secrets (fast, in memory)…
     const dataFindings = detect(text);
     // …plus the company's private source code (needs the database)…
     const codeFindings = codeGuard ? await codeGuard.check(text) : [];
     // …plus people's names (local AI model, Phase 6).
-    const nameFindings = nameFinder ? await nameFinder.find(text) : [];
+    const nameFindings = nameFinder && findNames ? await nameFinder.find(text) : [];
     // When findings overlap (e.g. a key INSIDE pasted code, or "rahul" inside an email
     // address), the longer one wins.
     const findings = resolveOverlaps([...dataFindings, ...codeFindings, ...nameFindings]);

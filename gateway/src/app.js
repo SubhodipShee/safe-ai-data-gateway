@@ -24,6 +24,7 @@
 //   GET    /api/audit/recent     newest audit entries (counts only)
 //   GET    /dashboard.html       the admin dashboard
 //   POST   /agent/v1/chat/completions  proxy for AI CODING AGENTS: masks files too, streaming (Phase 12)
+//   POST   /agent/anthropic/v1/messages proxy for CLAUDE CODE (Anthropic format), streaming (Phase 14)
 // =============================================================================
 
 import path from 'node:path';
@@ -39,6 +40,7 @@ import { auditRoute } from './routes/audit.js';
 import { chatProxyRoute } from './routes/chat-proxy.js';
 import { adminRoute } from './routes/admin.js';
 import { agentProxyRoute } from './routes/agent-proxy.js';
+import { anthropicProxyRoute } from './routes/anthropic-proxy.js';
 import { requireDatabase, errorHandler } from './http-helpers.js';
 import { securityHeaders, redirectToHttps, createRateLimits, requireAdminKey } from './security.js';
 
@@ -56,9 +58,10 @@ const publicFolder = path.join(path.dirname(fileURLToPath(import.meta.url)), '..
  * @param {boolean} [options.isPublic=false] true when hosted online (Phase 10): HTTPS + rate limits
  * @param {string} [options.adminKey]   if set, changing policies needs "Authorization: Bearer <key>"
  * @param {string} [options.clientIpHeader] header with the visitor's real IP (Render: 'true-client-ip')
- * @param {string} [options.agentKey]   key for the coding-agent proxy /agent (Phase 12)
+ * @param {string} [options.agentKey]   key for the coding-agent proxies under /agent (Phases 12 and 14)
+ * @param {string} [options.anthropicUrl] where Claude Code's requests go (Anthropic; changeable for tests)
  */
-export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, providerKey = 'none', isPublic = false, adminKey, clientIpHeader, agentKey }) {
+export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, providerKey = 'none', isPublic = false, adminKey, clientIpHeader, agentKey, anthropicUrl }) {
   const app = express();
   const masker = createMasker({ vault, auditChain, codeGuard, nameFinder });
 
@@ -89,6 +92,8 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
   // ---- The coding-agent proxy (Phase 12) ----
   // Mounted BEFORE the 1 MB limit below, because agents send whole files (it allows 20 MB).
   if (llm) app.use(agentProxyRoute({ masker, vault, llm, providerKey, isPublic, agentKey }));
+  // Claude Code (Phase 14): needs no AI key of ours, it brings the user's own Claude login.
+  app.use(anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstreamUrl: anthropicUrl }));
 
   // Read JSON request bodies, up to 1 MB.
   app.use(express.json({ limit: '1mb' }));
@@ -108,7 +113,8 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
       nameDetection: nameFinder ? nameFinder.status : 'off', // the local AI model (Phase 6)
       ai: llm?.configured ? { provider: llm.providerName, model: llm.model } : null, // the proxy (Phase 7)
       adminKeyRequired: Boolean(adminKey), // the dashboard asks for the key when true (Phase 10)
-      agentProxy: llm?.configured && (!isPublic || agentKey) ? 'on' : 'off', // /agent for coding tools (Phase 12)
+      agentProxy: llm?.configured && (!isPublic || agentKey) ? 'on' : 'off', // /agent/v1 for coding tools (Phase 12)
+      claudeCodeProxy: !isPublic || agentKey ? 'on' : 'off', // /agent/anthropic for Claude Code (Phase 14)
     });
   });
 

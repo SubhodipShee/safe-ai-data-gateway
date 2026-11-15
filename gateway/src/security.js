@@ -132,9 +132,18 @@ export function requireAdminKey(adminKey) {
  * @param {object} errorBody  what to answer (401) when the key is missing or wrong
  */
 export function requireBearerKey(expectedKey, errorBody) {
+  return requireKey(expectedKey, (req) => (req.get('authorization') || '').replace(/^Bearer\s+/i, ''), errorBody);
+}
+
+/**
+ * The most general version: `readKey(req)` says where the key is. Claude Code (Phase 14) needs
+ * this, because its Authorization header carries the user's own Claude login, so the gateway's
+ * key travels in a separate header (X-Safe-AI-Key).
+ */
+export function requireKey(expectedKey, readKey, errorBody) {
   return (req, res, next) => {
     if (!expectedKey) return next();
-    const sent = (req.get('authorization') || '').replace(/^Bearer\s+/i, '');
+    const sent = readKey(req);
     if (sent && timingSafeEqual(sha256(sent), sha256(expectedKey))) return next();
     res.status(401).json(errorBody);
   };

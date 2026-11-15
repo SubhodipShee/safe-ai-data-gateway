@@ -114,7 +114,7 @@ keyed hashes and counts. The master key lives only in the gateway's environment.
 
 1. **Browser extension**: protects people using chatgpt.com, claude.ai and gemini.google.com directly. It's connected to the live gateway: install it and use it, with nothing to set up. **[Download the extension (zip)](https://github.com/SubhodipShee/safe-ai-data-gateway/raw/main/download/safe-ai-gateway-extension.zip)** · [Install guide](extension/README.md).
 2. **VS Code extension** (for AI coding tools: Copilot, Claude Code, Codex, Cursor…): underlines Aadhaar, PAN and API keys in your files, protects secret files from AI tools, and copies code with values masked. Runs fully offline. *In development: private for now, not yet available for download.*
-3. **API proxy**, also for **AI coding agents** (Cline, Continue, Aider…: `/agent/v1`, masks the files they read, with streaming): OpenAI-compatible `POST /v1/chat/completions`. Existing code changes **one line**, the base URL.
+3. **API proxy**, also for **AI coding agents** (Claude Code via `/agent/anthropic`; Cline, Continue, Aider… via `/agent/v1`; masks the files they read, with streaming): OpenAI-compatible `POST /v1/chat/completions`. Existing code changes **one line**, the base URL.
 4. **Playground + dashboard**: try it in any browser, and see what was stopped, by whom and where.
 
 ## Quick start (Windows `cmd`, all free)
@@ -184,6 +184,24 @@ they send (your messages, the files they read, their tool calls) is masked first
    Works with **Cline, Continue, Roo Code, Aider** and other tools with an OpenAI-compatible setting.
 3. The AI that answers is the one in `gateway/.env` (`AI_PROVIDER`, `AI_API_KEY`). Agents send long requests;
    if Groq's free tier says "limit reached", a free Gemini key usually allows more per minute.
+
+### Claude Code
+
+Claude Code can send everything through the gateway too, **with your normal Claude login and plan**
+(the gateway passes your login on to Anthropic unchanged; only the sensitive text inside is masked).
+
+1. Start the gateway on your laptop (`npm run dev` in `gateway`).
+2. Start Claude Code with the gateway's address. In cmd:
+   ```
+   set ANTHROPIC_BASE_URL=http://127.0.0.1:7000/agent/anthropic
+   claude
+   ```
+   Or for one project, add to `.claude/settings.local.json`:
+   `{ "env": { "ANTHROPIC_BASE_URL": "http://127.0.0.1:7000/agent/anthropic" } }`
+3. Keep the gateway running while that's set. To stop using it, remove the line (or close that cmd window).
+
+Messages, files Claude Code reads, CLAUDE.md and tool calls are masked; answers and file edits get the real
+values back. Streaming, prompt caching and Claude's thinking keep working.
 
 **Online:** on Render the agent proxy is **off** unless you set `AGENT_KEY` in Render's Environment, so nobody
 else can use your server. Keep coding agents on the laptop gateway: it's faster and has no hosting limits.

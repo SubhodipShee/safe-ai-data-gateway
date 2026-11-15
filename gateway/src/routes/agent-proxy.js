@@ -185,14 +185,15 @@ export function agentProxyRoute({ masker, vault, llm, providerKey, isPublic, age
   const router = express.Router();
 
   // Online without an AGENT_KEY: switched off completely.
-  router.use('/agent', (req, res, next) => {
+  // (Only /agent/v1 here: Claude Code's /agent/anthropic has its own checks, see anthropic-proxy.js.)
+  router.use('/agent/v1', (req, res, next) => {
     if (isPublic && !agentKey) {
       return openAiError(res, 403, 'The coding-agent proxy is turned off on this server.', 'permission_error');
     }
     next();
   });
-  router.use('/agent', requireBearerKey(agentKey, { error: { message: 'Wrong or missing API key (use your AGENT_KEY).', type: 'authentication_error' } }));
-  router.use('/agent', express.json({ limit: MAX_BODY }), requireDatabase);
+  router.use('/agent/v1', requireBearerKey(agentKey, { error: { message: 'Wrong or missing API key (use your AGENT_KEY).', type: 'authentication_error' } }));
+  router.use('/agent/v1', express.json({ limit: MAX_BODY }), requireDatabase);
 
   // ---- GET /agent/v1/models: some agents check which models exist ----
   router.get('/agent/v1/models', (req, res) => {

@@ -53,29 +53,31 @@ export class BlockedError extends Error {
 }
 
 /**
- * Masks every piece of text in an OpenAI-style conversation.
- * @param {object} options
- * @param {object} options.masker     from createMasker()
- * @param {string} options.sessionId  same session for the whole conversation = same tags
- * @param {object[]} options.messages the agent's messages (not changed; a masked copy is returned)
- * @param {string} options.source     for the audit log, e.g. "coding-agent:groq"
- * @returns {Promise<{ messages: object[], tags: Set<string>, protectedCount: number }>}
- * @throws {BlockedError} if a "block" policy matches
+ * Creates a masker for the texts of ONE conversation. Used by both coding-agent formats
+ * (OpenAI here, Anthropic in anthropic-conversation.js).
+ *   const texts = createTextMasker({ masker, sessionId, source });
+ *   await texts.mask('mail rahul@abc.com')  → 'mail [[EMAIL_1]]'
+ *   texts.tags                              → Set { '[[EMAIL_1]]' }  (every tag seen)
+ * Only NEW text is checked (and written to the audit log); repeated text comes from memory.
  */
-export async function maskConversation({ masker, sessionId, messages, source }) {
+export function createTextMasker({ masker, sessionId, source }) {
   const tags = new Set();
   let protectedCount = 0;
 
-  /** Masks one text. Only NEW text is checked and written to the audit log. */
-  async function maskOne(text) {
+  /**
+   * Masks one text.
+   * @param {object} [options]
+   * @param {boolean} [options.findNames=true]  false = skip the name-finding AI
+   */
+  async function mask(text, { findNames = true } = {}) {
     if (typeof text !== 'string' || text === '') return text;
-    const key = `${sessionId}:${fingerprint(text)}`;
+    const key = `${sessionId}:${findNames ? 'n' : '-'}:${fingerprint(text)}`;
 
     let masked = remembered.get(key);
     if (masked === undefined) {
       masked = '';
       for (const piece of splitIntoPieces(text)) {
-        const result = await masker.maskText({ sessionId, text: piece, source });
+        const result = await masker.maskText({ sessionId, text: piece, source, findNames });
         if (result.blocked) throw new BlockedError(result);
         masked += result.maskedText;
         protectedCount += result.items.length;
@@ -87,6 +89,29 @@ export async function maskConversation({ masker, sessionId, messages, source }) 
     for (const tag of masked.match(TAG) ?? []) tags.add(tag);
     return masked;
   }
+
+  return {
+    mask,
+    tags,
+    get protectedCount() {
+      return protectedCount;
+    },
+  };
+}
+
+/**
+ * Masks every piece of text in an OpenAI-style conversation.
+ * @param {object} options
+ * @param {object} options.masker     from createMasker()
+ * @param {string} options.sessionId  same session for the whole conversation = same tags
+ * @param {object[]} options.messages the agent's messages (not changed; a masked copy is returned)
+ * @param {string} options.source     for the audit log, e.g. "coding-agent:groq"
+ * @returns {Promise<{ messages: object[], tags: Set<string>, protectedCount: number }>}
+ * @throws {BlockedError} if a "block" policy matches
+ */
+export async function maskConversation({ masker, sessionId, messages, source }) {
+  const texts = createTextMasker({ masker, sessionId, source });
+  const maskOne = (text) => texts.mask(text);
 
   const maskedMessages = [];
   for (const message of messages) {
@@ -113,5 +138,5 @@ export async function maskConversation({ masker, sessionId, messages, source }) 
     maskedMessages.push(copy);
   }
 
-  return { messages: maskedMessages, tags, protectedCount };
+  return { messages: maskedMessages, tags: texts.tags, protectedCount: texts.protectedCount };
 }
