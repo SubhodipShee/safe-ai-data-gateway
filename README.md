@@ -22,16 +22,57 @@ Free, self-hosted, and built for India: Aadhaar, PAN and GSTIN are validated wit
 
 ---
 
-## What makes it different
+## The problem it solves
+
+- **People paste sensitive data into AI chatbots every day.** Customer names, phone numbers, Aadhaar and PAN
+  numbers, bank details, API keys, even the company's source code. Once sent, it sits on another company's
+  servers and can't be taken back.
+- **In India this is now a legal risk.** Under the Digital Personal Data Protection (DPDP) Act, 2023,
+  a company must protect the personal data it holds; failing to take reasonable security safeguards can
+  cost up to ₹250 crore.
+- **Companies are stuck with two bad options.** Ban AI tools (and lose the productivity, while people use them
+  on their phones anyway), or allow them and hope nothing leaks.
+- **This project is the third option:** keep using ChatGPT, Claude and Gemini, but only *masked* text ever
+  leaves. The AI works with tags; the employee still sees a normal answer with the real values, and the
+  company gets tamper-proof evidence of what was protected.
+
+**Who it's for:** teams and small/medium companies in India that want to use AI safely, developers who call
+AI APIs from their own apps, and whoever has to show DPDP compliance.
+
+## Tools that already exist
+
+This isn't the first AI data-leak tool. These products solve parts of the same problem
+(checked from their public product pages, November 2026):
+
+| Product | What it does |
+|---|---|
+| **Microsoft Purview** | Enterprise data-loss prevention across Microsoft 365, including AI apps; part of paid Microsoft plans |
+| **Nightfall AI** | Cloud data-loss prevention that finds sensitive data in SaaS apps and AI prompts; paid, enterprise |
+| **Prompt Security** | Security platform for company use of generative AI |
+| **SecureGPT** | Browser extension that masks data before it reaches chatbots |
+| **NexusNest** (New Delhi) | Masks sensitive data before ChatGPT and Claude; the closest to this project |
+| **Protecto GPTGuard** | Replaces personal data with tokens before AI, with an India DPDP profile; enterprise |
+| **Infopercept Invinsense** | LLM gateway with keyword-based AI data-loss prevention |
+| **Repello AI** (Bengaluru) | Security platform for generative AI |
+
+So masking data before AI, even Indian data, is not new on its own. What's different is below.
+
+## What this project adds
+
+Features I didn't find described in those products' public material. They may have things they don't
+advertise, so this is "not seen publicly", not "nobody does it".
+
 
 | | |
 |---|---|
 | 🇮🇳 **India-first detection** | Aadhaar (Verhoeff checksum), PAN (holder-type check), GSTIN (mod-36 checksum), UPI IDs, IFSC, bank accounts, voter ID, passport, driving licence, Indian PIN-code addresses |
 | 😈 **Can't be bypassed with tricks** | Catches data written in Hindi/Bengali/Tamil digits (`२३४५ ६७८९ ०१२४`), with invisible characters, Cyrillic look-alike letters, full-width text or spaced-out digits, and logs each attempt |
 | 🔒 **Protects source code** | Registered repos are fingerprinted with *winnowing* (the algorithm behind the MOSS plagiarism detector). Pasted code is blocked even with every variable renamed and the formatting changed. No code is ever stored, only keyed hashes |
-| 🤖 **Local AI for names** | A BERT named-entity model runs *inside* the gateway (offline, ~10 ms) to find people's names. Names never go to another AI just to be detected |
+| 🤖 **Local AI for names** | A BERT named-entity model runs *inside* the gateway (offline, a few tens of milliseconds per message on a laptop) to find people's names. Names never go to another AI just to be detected |
 | 🧾 **Tamper-proof evidence (DPDP Act)** | Every event is SHA-256 hash-chained with an Ed25519-signed head. Editing or deleting any audit entry is detected. Signed DPDP evidence reports |
 | 🔐 **Encrypted vault** | Real values are stored with AES-256-GCM, one HKDF-derived key per session, sealed to their tag, and deleted automatically after 24 h |
+| ↩️ **Answers still make sense** | The real values are put back into the AI's reply on the employee's screen, and the same value always gets the same tag, so the AI can reason about "[[PERSON_1]]" across a whole conversation |
+| 💸 **Free and self-hosted** | Runs entirely on free tiers (Render, MongoDB Atlas M0, Groq). The data stays on infrastructure the company controls |
 
 ## Architecture
 
@@ -155,6 +196,7 @@ extension/         Chrome extension (Manifest V3)
 demo/              fake "ACME Payments" repo + demo script
 download/          the extension as a zip, ready to share
 PLAN.md            full design and build log
+AGENTS.md          guide for AI coding agents and new developers (structure, rules, how to add features)
 ```
 
 ## Free stack
@@ -170,12 +212,6 @@ Total cost: **₹0**.
 - Very common boilerplate code in a registered repo could match identical boilerplate elsewhere.
 - Rolling the audit log back to an older signed head needs an external anchor to detect (e.g. publishing the daily head hash).
 - Streaming responses are not supported by the API proxy yet.
-
-## Comparable products
-
-Commercial AI-DLP tools (Microsoft Purview, Nightfall, Protecto, NexusNest…) cover parts of this.
-This project focuses on what was not visible in their public material: bypass-resistant Indian
-identifier detection, keyed source-code fingerprinting, and tamper-evident DPDP evidence, free and self-hosted.
 
 ---
 *Technical evidence to support DPDP Act, 2023 compliance. Not legal advice.*
