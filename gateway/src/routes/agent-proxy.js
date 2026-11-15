@@ -31,6 +31,7 @@ import { AiProviderError } from '../ai/llm-client.js';
 import { requireDatabase } from '../http-helpers.js';
 import { requireBearerKey } from '../security.js';
 import { maskConversation, BlockedError } from '../agent/mask-conversation.js';
+import { latestUserText } from '../agent/activity.js';
 import { createStreamRestorer } from '../agent/stream-restorer.js';
 
 const MAX_MESSAGES = 2000; // agents send long conversations
@@ -181,8 +182,9 @@ async function relayStream(upstream, res, values) {
  * @param {boolean} options.isPublic    online? Then AGENT_KEY is required
  * @param {string} [options.agentKey]   the AGENT_KEY setting
  * @param {boolean} [options.findNames=true]  look for people's names? (online: off, see config.js)
+ * @param {object} [options.activity]  from createActivityLog() (for the VS Code pop-up)
  */
-export function agentProxyRoute({ masker, vault, llm, providerKey, isPublic, agentKey, findNames = true }) {
+export function agentProxyRoute({ masker, vault, llm, providerKey, isPublic, agentKey, findNames = true, activity }) {
   const router = express.Router();
 
   // Online without an AGENT_KEY: switched off completely.
@@ -227,6 +229,13 @@ export function agentProxyRoute({ masker, vault, llm, providerKey, isPublic, age
         blocked_items: error.blockedItems,
       });
     }
+    // For the VS Code pop-up "Safe AI hid … from Copilot" (Phase 16; types and tags only).
+    activity?.record(req.get('X-Safe-AI-Install'), {
+      tool: origin === 'vscode-copilot' ? 'Copilot' : 'Coding tool',
+      found: masked.found,
+      aiSaw: latestUserText(masked.messages),
+      sessionId,
+    });
     const messages = masked.tags.size > 0 ? withKeepTagsInstruction(masked.messages) : masked.messages;
 
     // The AI can only refer to tags it has seen, so look up just those, once.

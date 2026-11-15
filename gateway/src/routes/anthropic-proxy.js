@@ -35,6 +35,7 @@ import {
   restoreAnthropicAnswer,
   createAnthropicStreamRestorer,
 } from '../agent/anthropic-conversation.js';
+import { latestUserText } from '../agent/activity.js';
 
 const BASE = '/agent/anthropic';
 const MAX_BODY = '32mb';
@@ -131,8 +132,9 @@ async function relayStream(upstream, res, values) {
  * @param {string} [options.agentKey]  the AGENT_KEY setting
  * @param {string} [options.upstreamUrl] Anthropic's API (changeable for tests)
  * @param {boolean} [options.findNames=true]  look for people's names? (online: off, see config.js)
+ * @param {object} [options.activity]  from createActivityLog() (for the VS Code pop-up)
  */
-export function anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstreamUrl = 'https://api.anthropic.com', findNames = true }) {
+export function anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstreamUrl = 'https://api.anthropic.com', findNames = true, activity }) {
   const router = express.Router();
 
   // ---- Who may use it ----
@@ -165,6 +167,13 @@ export function anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstrea
       anthropicError(res, 403, 'permission_error', `Safe AI gateway blocked this request: it contains data that must never be sent to an AI (${types}).`);
       return null;
     }
+    // For the VS Code pop-up "Safe AI hid … from Claude Code" (Phase 16; types and tags only).
+    activity?.record(req.get('x-safe-ai-install'), {
+      tool: 'Claude Code',
+      found: masked.found,
+      aiSaw: latestUserText(masked.body.messages),
+      sessionId,
+    });
 
     let upstream;
     try {

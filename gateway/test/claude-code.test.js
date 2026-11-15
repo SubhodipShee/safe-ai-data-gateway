@@ -252,4 +252,31 @@ describe('Claude Code proxy (fake Anthropic + Atlas)', { skip: SKIP_WITHOUT_DB }
     assert.equal(ok.status, 200);
     assert.equal(received.at(-1).headers['x-safe-ai-key'], undefined, 'our key is never sent to Anthropic');
   });
+
+  test('the VS Code pop-up (Phase 16): "you typed" vs "Claude saw", only for the install that sent it', async () => {
+    const install = randomUUID();
+    const typed = `repeat exactly, PAN ${PAN}`;
+    respond = (req, res) => res.json({ type: 'message', content: [{ type: 'text', text: 'ok' }] });
+    const message = { role: 'user', content: [
+      { type: 'text', text: '<system-reminder>background notes</system-reminder>' },
+      { type: 'text', text: typed },
+    ] };
+    await claudeCall('/v1/messages', { ...claudeRequest(), messages: [message] }, { headers: { 'X-Safe-AI-Install': install } });
+    assert.ok(!JSON.stringify(received.at(-1).body).includes(PAN), 'Anthropic got the tag only');
+
+    const activityUrl = baseUrl.replace('/agent/anthropic', '/agent/activity');
+    const ask = (id) => fetch(`${activityUrl}?since=0`, { headers: { 'X-Safe-AI-Install': id } }).then((r) => r.json());
+
+    const { events } = await ask(install);
+    assert.equal(events.length, 1);
+    assert.equal(events[0].tool, 'Claude Code');
+    assert.deepEqual(events[0].found, { PAN: 1 });
+    assert.match(events[0].aiSaw, /^repeat exactly, PAN \[\[PAN_\d+\]\]$/, 'what Claude received');
+    assert.equal(events[0].youTyped, typed, 'what you typed, rebuilt from the vault');
+    assert.equal(events[0].sessionId, undefined, 'the session stays inside the gateway');
+
+    assert.deepEqual((await ask(randomUUID())).events, [], 'another install sees nothing');
+    await claudeCall('/v1/messages', { ...claudeRequest(), messages: [message] }, { headers: { 'X-Safe-AI-Install': install } });
+    assert.equal((await ask(install)).events.length, 1, 'the same message again: no second pop-up');
+  });
 });

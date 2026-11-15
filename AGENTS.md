@@ -255,6 +255,9 @@ database code (that's why the tag rules live in `gateway/src/tags.js`). Gateway 
 - On Render it stays off unless `AGENT_KEY` is set; then only requests with that key get in (the private VS Code
   extension uses Render by default with the key built in, Phase 15). Online, names aren't searched in coding tools'
   files (`AGENT_NAME_DETECTION`): measured 43 s per 10 KB file on Render's 0.1 CPU, and 18 KB crashed the server.
+- Phase 16 pop-up: `agent/activity.js` keeps "what was hidden" per install ID (`X-Safe-AI-Install`) in MEMORY only
+  (10 events, 30 min, masked text + types). `GET /agent/activity?since=` (key in `X-Safe-AI-Key`) returns them and
+  rebuilds "you typed" from the vault for that install only. Never put real values in that list or in logs.
 - Every text in the conversation is masked (`agent/mask-conversation.js` → `createTextMasker`). Claude Code's format lives in
   `agent/anthropic-conversation.js` + `routes/anthropic-proxy.js`. A future OpenAI "Responses" format (Codex) should reuse the same pieces.
 - Claude Code rules (Anthropic's gateway guide): forward `Authorization`, `anthropic-*` headers and every body field unchanged;

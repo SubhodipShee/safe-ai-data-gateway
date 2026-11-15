@@ -72,7 +72,8 @@ async function maskContent(content, maskText) {
  * @param {string} options.source     for the audit log, e.g. "claude-code:anthropic"
  * @param {object} options.body       the request body Claude Code sent
  * @param {boolean} [options.findNames=true]  false = don't look for people's names (online)
- * @returns {Promise<{ body: object, tags: Set<string> }>}
+ * @returns {Promise<{ body: object, tags: Set<string>, found: object }>}
+ *          found = what was hidden in new text, by type, e.g. { PAN: 1 }
  * @throws {BlockedError} if a "block" policy matches (see mask-conversation.js)
  */
 export async function maskAnthropicRequest({ masker, sessionId, source, body, findNames = true }) {
@@ -93,7 +94,7 @@ export async function maskAnthropicRequest({ masker, sessionId, source, body, fi
       masked.messages.push({ ...message, content: await maskContent(message?.content, maskThis) });
     }
   }
-  return { body: masked, tags: texts.tags };
+  return { body: masked, tags: texts.tags, found: texts.found };
 }
 
 // ---------------------------------------------------------------------------

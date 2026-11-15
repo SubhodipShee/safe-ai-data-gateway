@@ -13,6 +13,7 @@ import { createLlmClient } from '../src/ai/llm-client.js';
 import { createStreamRestorer } from '../src/agent/stream-restorer.js';
 import { maskConversation } from '../src/agent/mask-conversation.js';
 import { maskAnthropicRequest } from '../src/agent/anthropic-conversation.js';
+import { createActivityLog, latestUserText } from '../src/agent/activity.js';
 import { clearPolicyCache } from '../src/policies.js';
 import { Policy, seedDefaultPolicies } from '../src/models/Policy.js';
 import { connectTestDb, dropTestDb, SKIP_WITHOUT_DB } from './test-db.js';
@@ -109,6 +110,40 @@ function listen(app) {
     const server = app.listen(0, '127.0.0.1', () => resolve(server));
   });
 }
+
+describe('activity.js: what the VS Code pop-up shows (Phase 16; no database)', () => {
+  const INSTALL = '11111111-2222-3333-4444-555555555555';
+
+  test('keeps events per install, newest 10, for 30 minutes; ignores "nothing hidden" and bad IDs', () => {
+    let clock = 1_000_000;
+    const activity = createActivityLog({ now: () => clock });
+    activity.record(INSTALL, { tool: 'Claude Code', found: {}, aiSaw: null });
+    activity.record('bad id', { tool: 'Claude Code', found: { PAN: 1 }, aiSaw: null });
+    assert.deepEqual(activity.since(INSTALL, 0), []);
+
+    for (let i = 0; i < 12; i++) {
+      clock += 1000;
+      activity.record(INSTALL, { tool: 'Copilot', found: { EMAIL: 1 }, aiSaw: `mail [[EMAIL_${i}]]` });
+    }
+    assert.equal(activity.since(INSTALL, 0).length, 10, 'only the newest 10');
+    assert.equal(activity.since(INSTALL, clock - 1000).length, 1, '"since" returns only newer ones');
+    clock += 31 * 60_000;
+    assert.deepEqual(activity.since(INSTALL, 0), [], 'forgotten after 30 minutes');
+  });
+
+  test('latestUserText: the typed text with a tag (both formats); null when the data was in a file', () => {
+    assert.equal(latestUserText([{ role: 'user', content: 'PAN [[PAN_1]]' }]), 'PAN [[PAN_1]]');
+    assert.equal(latestUserText([{ role: 'user', content: [
+      { type: 'text', text: '<system-reminder>[[UPI_ID_1]]</system-reminder>' },
+      { type: 'text', text: 'PAN [[PAN_1]]' },
+    ] }]), 'PAN [[PAN_1]]');
+    assert.equal(latestUserText([{ role: 'user', content: [{ type: 'tool_result', content: '[[PAN_1]]' }] }]), null);
+    assert.equal(latestUserText([{ role: 'user', content: 'no tags here' }]), null);
+
+    const long = `${'x'.repeat(500)} PAN [[PAN_1]] ${'y'.repeat(500)}`;
+    assert.match(latestUserText([{ role: 'user', content: long }]), /^….*\[\[PAN_1\]\].*…$/, 'a long message: the part around the tag');
+  });
+});
 
 describe('names on or off for coding tools (Phase 15; no database)', () => {
   /** A fake masker that only records whether the name-finding AI was asked for. */

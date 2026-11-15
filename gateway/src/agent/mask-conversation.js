@@ -64,6 +64,7 @@ export class BlockedError extends Error {
 export function createTextMasker({ masker, sessionId, source, findNames: findNamesByDefault = true }) {
   const tags = new Set();
   let protectedCount = 0;
+  const found = {}; // what was hidden in NEW text, by type, e.g. { PAN: 1 } (for the VS Code pop-up, Phase 16)
 
   /**
    * Masks one text.
@@ -82,6 +83,7 @@ export function createTextMasker({ masker, sessionId, source, findNames: findNam
         if (result.blocked) throw new BlockedError(result);
         masked += result.maskedText;
         protectedCount += result.items.length;
+        for (const item of result.items) found[item.type] = (found[item.type] ?? 0) + 1;
       }
       remembered.set(key, masked);
       if (remembered.size > REMEMBERED_TEXTS) remembered.delete(remembered.keys().next().value); // forget the oldest
@@ -94,6 +96,7 @@ export function createTextMasker({ masker, sessionId, source, findNames: findNam
   return {
     mask,
     tags,
+    found,
     get protectedCount() {
       return protectedCount;
     },
@@ -108,7 +111,8 @@ export function createTextMasker({ masker, sessionId, source, findNames: findNam
  * @param {object[]} options.messages the agent's messages (not changed; a masked copy is returned)
  * @param {string} options.source     for the audit log, e.g. "coding-agent:groq"
  * @param {boolean} [options.findNames=true]  false = don't look for people's names (online)
- * @returns {Promise<{ messages: object[], tags: Set<string>, protectedCount: number }>}
+ * @returns {Promise<{ messages: object[], tags: Set<string>, protectedCount: number, found: object }>}
+ *          found = what was hidden in new text, by type, e.g. { PAN: 1 }
  * @throws {BlockedError} if a "block" policy matches
  */
 export async function maskConversation({ masker, sessionId, messages, source, findNames = true }) {
@@ -140,5 +144,5 @@ export async function maskConversation({ masker, sessionId, messages, source, fi
     maskedMessages.push(copy);
   }
 
-  return { messages: maskedMessages, tags: texts.tags, protectedCount: texts.protectedCount };
+  return { messages: maskedMessages, tags: texts.tags, protectedCount: texts.protectedCount, found: texts.found };
 }

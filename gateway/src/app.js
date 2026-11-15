@@ -41,6 +41,8 @@ import { chatProxyRoute } from './routes/chat-proxy.js';
 import { adminRoute } from './routes/admin.js';
 import { agentProxyRoute } from './routes/agent-proxy.js';
 import { anthropicProxyRoute } from './routes/anthropic-proxy.js';
+import { activityRoute } from './routes/activity.js';
+import { createActivityLog } from './agent/activity.js';
 import { requireDatabase, errorHandler } from './http-helpers.js';
 import { securityHeaders, redirectToHttps, createRateLimits, requireAdminKey } from './security.js';
 
@@ -94,9 +96,12 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
   // ---- The coding-agent proxy (Phase 12) ----
   // Mounted BEFORE the 1 MB limit below, because agents send whole files (it allows 20 MB).
   const findNames = agentNameDetection;
-  if (llm) app.use(agentProxyRoute({ masker, vault, llm, providerKey, isPublic, agentKey, findNames }));
+  // What was hidden from the AI, for the VS Code pop-up (Phase 16; in memory, tags only).
+  const activity = createActivityLog();
+  if (llm) app.use(agentProxyRoute({ masker, vault, llm, providerKey, isPublic, agentKey, findNames, activity }));
   // Claude Code (Phase 14): needs no AI key of ours, it brings the user's own Claude login.
-  app.use(anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstreamUrl: anthropicUrl, findNames }));
+  app.use(anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstreamUrl: anthropicUrl, findNames, activity }));
+  app.use(activityRoute({ activity, masker, isPublic, agentKey }));
 
   // Read JSON request bodies, up to 1 MB.
   app.use(express.json({ limit: '1mb' }));
