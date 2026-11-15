@@ -133,8 +133,11 @@ vscode-extension/
   src/core/scan.js     findSensitiveData(text) using ../gateway/src/detectors (offline)
   src/core/local-masker.js  copy masked / paste restored; values kept only in memory
   src/core/protect.js  writes "don't read these files" settings for each AI tool (managed block between markers)
+  src/core/openai-format.js   VS Code chat parts ⇄ OpenAI messages (recognised by shape; testable without VS Code)
+  src/core/gateway-client.js  streams from the gateway's /agent/v1 (checkGateway, streamChat)
+  src/copilot-provider.js     "Safe AI (masked)" model for Copilot Chat (vscode.lm.registerLanguageModelChatProvider, VS Code 1.104+)
   build.mjs            esbuild → dist/extension.js (one file; gateway detectors included)
-  test/                core.test.js (logic) + extension-load.test.js (loads the built file with a fake VS Code)
+  test/                core.test.js, copilot.test.js (logic) + extension-load.test.js (loads the built file with a fake VS Code)
 download/              safe-ai-gateway-extension.zip (browser; npm run zip-extension, a test checks it's current)
                        safe-ai-gateway-vscode.vsix (VS Code; npm run package in vscode-extension/). PRIVATE:
                        git-ignored, owner-only for now. Don't commit it or link it publicly until the owner says so
