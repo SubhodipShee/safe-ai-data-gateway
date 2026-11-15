@@ -56,7 +56,10 @@ const dnsServers = (process.env.DNS_SERVERS || '')
 // ---- HOST: who can connect ----
 // 127.0.0.1 = only THIS computer (safest while developing).
 // 0.0.0.0   = anyone who can reach this machine (needed on Render, Phase 10).
-const host = process.env.HOST || '127.0.0.1';
+// On Render (which always sets RENDER=true) the default is 0.0.0.0, so the site
+// still works if the HOST setting is ever missing. (That happened once: a deploy
+// failed with "no open ports detected", because it listened on 127.0.0.1.)
+const host = process.env.HOST?.trim() || (process.env.RENDER === 'true' ? '0.0.0.0' : '127.0.0.1');
 const LOCAL_ONLY_HOSTS = ['127.0.0.1', 'localhost', '::1'];
 const isPublic = !LOCAL_ONLY_HOSTS.includes(host);
 

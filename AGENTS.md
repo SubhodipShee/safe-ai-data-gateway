@@ -164,6 +164,8 @@ node --test test/detectors.test.js     (one file)
   `HOST`, `PORT`, `ADMIN_KEY`, `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `NAME_DETECTION`, `SESSION_TTL_HOURS`,
   `DNS_SERVERS` (only for laptops whose DNS refuses SRV lookups), `CLIENT_IP_HEADER` (Render: `true-client-ip`).
 - **Public mode:** any `HOST` other than 127.0.0.1/localhost turns on the HTTPS redirect, rate limits, and requires `ADMIN_KEY`.
+  On Render (`RENDER=true`, set by Render itself) `HOST` defaults to `0.0.0.0`; without that, a deploy fails with
+  "Port scan timeout… no open ports detected" because the server would only listen on 127.0.0.1.
 - **Deploy:** push to `main` on GitHub. Render rebuilds automatically (about 2 minutes); see `render.yaml`.
   Check https://safe-ai-gateway.onrender.com/health afterwards. The free plan sleeps after 15 minutes idle.
 

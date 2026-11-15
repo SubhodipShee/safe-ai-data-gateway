@@ -137,6 +137,13 @@ describe('config.js', () => {
     assert.match(loadConfig({ HOST: '0.0.0.0' }), /ADMIN_KEY is required/);
   });
 
+  test('on Render without a HOST setting, it still listens publicly (and so needs the ADMIN_KEY)', () => {
+    // HOST: '' = "not set" (and stops the laptop's .env from filling it in).
+    assert.match(loadConfig({ RENDER: 'true', HOST: '' }), /ADMIN_KEY is required/, 'public mode chosen automatically');
+    assert.equal(loadConfig({ RENDER: 'true', HOST: '', ADMIN_KEY: ADMIN_KEY }), '');
+    assert.equal(loadConfig({ HOST: '' }), '', 'on a laptop (no RENDER) it stays local, no key needed');
+  });
+
   test('a public HOST with an ADMIN_KEY starts; a too-short key is refused', () => {
     assert.equal(loadConfig({ HOST: '0.0.0.0', ADMIN_KEY: ADMIN_KEY }), '');
     assert.match(loadConfig({ HOST: '0.0.0.0', ADMIN_KEY: 'short' }), /too short/);

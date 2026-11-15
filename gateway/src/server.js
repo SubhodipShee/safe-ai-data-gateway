@@ -51,7 +51,8 @@ const app = createApp({
 });
 const server = app.listen(config.port, config.host, () => {
   const shownHost = config.host === '0.0.0.0' ? 'localhost' : config.host;
-  console.log(`[gateway] listening on http://${shownHost}:${config.port}`);
+  // The REAL address and port, so a hosting log shows exactly what was opened.
+  console.log(`[gateway] listening on ${config.host}:${config.port}`);
   console.log(`[gateway] playground: http://${shownHost}:${config.port}/`);
   console.log(config.isPublic
     ? '[gateway] public mode: HTTPS redirect, rate limits and admin key are ON'
