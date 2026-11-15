@@ -279,7 +279,7 @@ SAFE AI DATA GATEWAY/
 | 8 | Chrome extension (ChatGPT, Claude, Gemini + local demo chat) | ✅ Tested on chatgpt.com: masked before sending, restored on screen (green), one session per chat, "show what the AI saw" switch. Backup demo: `/chat-demo.html` |
 | 9 | Dashboard + README + demo script | ✅ 240/240 tests; `/dashboard.html` (charts, live policies, audit verify, signed report); README.md; demo/demo-script.md |
 | 10 | Go online (section 11) | ✅ 250/250 tests; live at https://safe-ai-gateway.onrender.com; checked live: DB connected, http→https, CSP/HSTS, mask→unmask round trip, admin key 401, audit intact. Live check found and fixed: proxy hops (rate limits) and "Aadhaar" read as a name |
-| 11 | **VS Code extension, part 1** (new folder `vscode-extension/`): underline sensitive data in files, protect files from AI tools, copy masked / paste restored | Works in VS Code and VS Code-based editors; shared as a `.vsix` on GitHub (free) |
+| 11 | **VS Code extension, part 1** (`vscode-extension/`): underline sensitive data, scan workspace, protect secret files from AI tools (8 ignore files + Claude Code deny rules + AGENTS.md), copy masked / paste restored | ✅ 19/19 extension tests + 252/252 gateway tests; fully offline; `download/safe-ai-gateway-vscode.vsix` (90 KB, private: git-ignored, owner-only) accepted by VS Code; browser extension untouched |
 | 12 | **Gateway for AI coding tools**: Anthropic Messages + OpenAI Responses formats, with streaming | Live test with Cline + Gemini/Groq free tier, gateway running on the laptop |
 | 13 | **"Protect my AI tools" button** in the VS Code extension: routes terminal agents (Claude Code, Codex…) and, if the free plan allows, Copilot through the gateway | One click, automatic masking for coding tools |
 

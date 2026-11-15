@@ -26,6 +26,11 @@ Three parts:
 | **Gateway** | `gateway/` | Node.js 24 + Express 5 server. Detects, masks, encrypts, audits. Also serves the web pages |
 | **Browser extension** | `extension/` | Chrome/Edge Manifest V3. Masks messages on chatgpt.com, claude.ai, gemini.google.com before sending |
 | **Web pages** | `gateway/public/` | Playground (try it), dashboard (stats, policies, audit), demo chat (backup demo for the extension) |
+| **VS Code extension** | `vscode-extension/` | For AI coding tools. Underlines sensitive data, protects secret files from AI tools, copy masked / paste restored. Runs fully offline, reusing the gateway's detectors (bundled by esbuild) |
+
+The browser extension and the VS Code extension are **two separate products**. Changing one must never change the other.
+The VS Code extension is **private for now**: `vscode-extension/` and its `.vsix` are git-ignored and exist only on the
+owner's laptop. Never commit, push or publish them until the owner says so.
 
 Live: https://safe-ai-gateway.onrender.com · Repo: https://github.com/SubhodipShee/safe-ai-data-gateway
 
@@ -80,6 +85,7 @@ The API proxy (`POST /v1/chat/completions`, OpenAI-compatible) does mask → AI 
 ```
 gateway/
   src/
+    tags.js            tag rules shared with the VS Code extension: makePlaceholder, normalizeForLookup (no DB code)
     server.js          starts everything: config → vault, audit chain, code guard, name model, AI client → app → DB
     app.js             builds the Express app: security, routes, error handling (no listening here)
     config.js          reads and validates gateway/.env; exports a frozen `config`
@@ -119,7 +125,16 @@ extension/
   tag-restore.js       finds and replaces [[TAG_N]] even when split across several text nodes
   popup.*              on/off, show-real-values switch, fail mode, status, counters, author credit
   icons/               icon.svg (source) + 16/32/48/128 PNGs
-download/              safe-ai-gateway-extension.zip (built by npm run zip-extension; a test checks it's current)
+vscode-extension/
+  src/extension.js     connects core/ to VS Code: underlines, status bar, commands, keyboard shortcuts
+  src/core/scan.js     findSensitiveData(text) using ../gateway/src/detectors (offline)
+  src/core/local-masker.js  copy masked / paste restored; values kept only in memory
+  src/core/protect.js  writes "don't read these files" settings for each AI tool (managed block between markers)
+  build.mjs            esbuild → dist/extension.js (one file; gateway detectors included)
+  test/                core.test.js (logic) + extension-load.test.js (loads the built file with a fake VS Code)
+download/              safe-ai-gateway-extension.zip (browser; npm run zip-extension, a test checks it's current)
+                       safe-ai-gateway-vscode.vsix (VS Code; npm run package in vscode-extension/). PRIVATE:
+                       git-ignored, owner-only for now. Don't commit it or link it publicly until the owner says so
 demo/                  fake company repo (acme-payments) + 5-minute interview demo script
 render.yaml            Render Blueprint (free plan, Singapore, env vars)
 PLAN.md                full design and phase-by-phase build log
@@ -209,6 +224,17 @@ For the dashboard's "by AI provider" table, also map the source in `audit/dpdp-r
 Create a router in `gateway/src/routes/`, mount it in `app.js` (after `requireDatabase` if it uses MongoDB),
 validate input with the helpers in `http-helpers.js`, never return raw values, add tests in `test/api.test.js`.
 If it's under `/api` or changes data, think about rate limits and the admin key (`security.js`).
+
+### G. Change the VS Code extension
+```
+cd /d "D:\Projects\SAFE AI DATA GATEWAY\vscode-extension"
+npm install            (first time: esbuild + vsce, both free)
+npm test               (builds dist/ and runs its tests)
+npm run package        (writes ../download/safe-ai-gateway-vscode.vsix)
+```
+Bump `version` in `vscode-extension/package.json`. The `.vsix` is private for now (git-ignored): don't commit it. Keep everything offline:
+the VS Code extension must never upload file contents. Code shared with the gateway must not import
+database code (that's why the tag rules live in `gateway/src/tags.js`). Gateway tests: `npm test` in `gateway/`.
 
 ### F. Change a web page
 Edit `gateway/public/*.html|css|js`. No inline scripts (CSP). Colours are CSS variables with light and dark

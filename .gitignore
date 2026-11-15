@@ -10,3 +10,7 @@ Thumbs.db
 
 # Built files to share (e.g. the extension zip); not part of the source
 dist/
+
+# The VS Code extension is PRIVATE for now (owner only): its source and its .vsix stay on the laptop, off GitHub.
+vscode-extension/
+download/*.vsix

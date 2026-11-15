@@ -110,11 +110,12 @@ flowchart LR
 **Neither the database nor the AI provider ever sees a real value.** Atlas stores only ciphertext,
 keyed hashes and counts. The master key lives only in the gateway's environment.
 
-## Three ways to use it
+## Four ways to use it
 
 1. **Browser extension**: protects people using chatgpt.com, claude.ai and gemini.google.com directly. It's connected to the live gateway: install it and use it, with nothing to set up. **[Download the extension (zip)](https://github.com/SubhodipShee/safe-ai-data-gateway/raw/main/download/safe-ai-gateway-extension.zip)** · [Install guide](extension/README.md).
-2. **API proxy**: OpenAI-compatible `POST /v1/chat/completions`. Existing code changes **one line**, the base URL.
-3. **Playground + dashboard**: try it in any browser, and see what was stopped, by whom and where.
+2. **VS Code extension** (for AI coding tools: Copilot, Claude Code, Codex, Cursor…): underlines Aadhaar, PAN and API keys in your files, protects secret files from AI tools, and copies code with values masked. Runs fully offline. *In development: private for now, not yet available for download.*
+3. **API proxy**: OpenAI-compatible `POST /v1/chat/completions`. Existing code changes **one line**, the base URL.
+4. **Playground + dashboard**: try it in any browser, and see what was stopped, by whom and where.
 
 ## Quick start (Windows `cmd`, all free)
 
@@ -192,9 +193,10 @@ gateway/
     vault.js       encrypted storage of real values
   public/          playground, dashboard, demo chat
   test/            251 tests
-extension/         Chrome extension (Manifest V3)
+extension/         browser extension (Chrome/Edge, Manifest V3)
+vscode-extension/  VS Code extension for AI coding tools (private for now: kept on the owner's laptop, not in this repo)
 demo/              fake "ACME Payments" repo + demo script
-download/          the extension as a zip, ready to share
+download/          the browser extension as a zip, ready to share
 PLAN.md            full design and build log
 AGENTS.md          guide for AI coding agents and new developers (structure, rules, how to add features)
 ```
