@@ -100,6 +100,9 @@ gateway/
       normalize.js     bypass cleaning (Indic digits, invisible chars, homoglyphs, full-width, spaced digits) + position mapping
       util.js          findAll(text, regex, type, { group, validate, label }): the helper every detector uses
       email.js phone.js pan.js aadhaar.js india.js secrets.js entropy.js address.js
+    agent/             Phase 12: the coding-agent proxy's helpers
+      mask-conversation.js  masks every text in an agent conversation (messages, tool results = files, tool calls); remembers masked texts by SHA-256
+      stream-restorer.js    restores tags in a STREAMED answer, even when a tag is cut across chunks; JSON mode for tool-call arguments
     ai/
       name-finder.js   PERSON via local BERT-NER (transformers.js, 1 CPU thread, model in gateway/.models)
       llm-client.js    AI providers for the proxy: groq (default), gemini, ollama, custom
@@ -114,7 +117,7 @@ gateway/
       audit-chain.js   append (batched, ordered, retried) and verify() the hash chain
       dpdp-report.js   CATEGORIES, AI_PROVIDERS, buildDpdpReport (signed, counts only)
     models/            Mongoose: Session, VaultEntry (TTL 24 h), AuditLog (TTL 90 d), AuditHead, Policy, CodeFile
-    routes/            mask.js unmask.js session.js audit.js admin.js chat-proxy.js
+    routes/            mask.js unmask.js session.js audit.js admin.js chat-proxy.js agent-proxy.js
   public/              playground.*, dashboard.*, chat-demo.* (plain HTML/CSS/JS, SVG charts, no frameworks)
   scripts/             check-db, check-ai, try-detect, vault-demo, tamper-demo, register-code, download-model, zip-extension
   test/                node:test files, one per area (see section 6)
@@ -151,7 +154,9 @@ PLAN.md                full design and phase-by-phase build log
 | POST | `/mask` | `{ sessionId, text, source? }` → masked text; 403 if a policy blocks |
 | POST | `/unmask` | `{ sessionId, text }` → real values restored |
 | DELETE | `/session/:sessionId` | forget a session's values now |
-| POST | `/v1/chat/completions` | OpenAI-compatible proxy (headers: `X-Session-Id`, `X-Gateway-Source`) |
+| POST | `/v1/chat/completions` | OpenAI-compatible proxy for the playground/apps (no streaming, text only) |
+| POST | `/agent/v1/chat/completions` | Proxy for AI CODING AGENTS: tools, tool results (files) and streaming; up to 20 MB. Online it's OFF unless `AGENT_KEY` is set (then `Authorization: Bearer <AGENT_KEY>`) |
+| GET | `/agent/v1/models` | the model list some agents ask for |
 | GET | `/api/audit/verify` | re-check the hash chain |
 | GET | `/api/audit/public-key` | Ed25519 public key |
 | GET | `/api/reports/dpdp?from&to` | signed DPDP evidence report (counts only) |
@@ -177,7 +182,8 @@ node --test test/detectors.test.js     (one file)
   (`safe-ai-gateway-test-<name>`, see `test/test-db.js`) and skip themselves without a DB.
 - **Settings** (`gateway/.env`, see `.env.example`): `MONGODB_URI`, `MASTER_KEY` (32 bytes base64, `npm run gen-key`),
   `HOST`, `PORT`, `ADMIN_KEY`, `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `NAME_DETECTION`, `SESSION_TTL_HOURS`,
-  `DNS_SERVERS` (only for laptops whose DNS refuses SRV lookups), `CLIENT_IP_HEADER` (Render: `true-client-ip`).
+  `DNS_SERVERS` (only for laptops whose DNS refuses SRV lookups), `CLIENT_IP_HEADER` (Render: `true-client-ip`),
+  `AGENT_KEY` (key for `/agent`; online the coding-agent proxy is off without it).
 - **Public mode:** any `HOST` other than 127.0.0.1/localhost turns on the HTTPS redirect, rate limits, and requires `ADMIN_KEY`.
   On Render (`RENDER=true`, set by Render itself) `HOST` defaults to `0.0.0.0`; without that, a deploy fails with
   "Port scan timeout… no open ports detected" because the server would only listen on 127.0.0.1.
@@ -235,6 +241,13 @@ npm run package        (writes ../download/safe-ai-gateway-vscode.vsix)
 Bump `version` in `vscode-extension/package.json`. The `.vsix` is private for now (git-ignored): don't commit it. Keep everything offline:
 the VS Code extension must never upload file contents. Code shared with the gateway must not import
 database code (that's why the tag rules live in `gateway/src/tags.js`). Gateway tests: `npm test` in `gateway/`.
+
+### H. The coding-agent proxy (`/agent`, Phase 12)
+- Use it from an agent's "OpenAI-compatible" provider: Base URL `http://127.0.0.1:7000/agent/v1`, any API key on the laptop.
+- Keep the gateway on the laptop for coding agents (fast, private). On Render it stays off unless `AGENT_KEY` is set.
+- Every text in the conversation is masked (`agent/mask-conversation.js`); new formats (Anthropic Messages for Claude Code,
+  OpenAI Responses for Codex) should reuse it and `agent/stream-restorer.js`, as new routes next to `agent-proxy.js`.
+- Tests: `test/agent.test.js` (fake AI provider: proves files and messages never reach it unmasked, with and without streaming).
 
 ### F. Change a web page
 Edit `gateway/public/*.html|css|js`. No inline scripts (CSP). Colours are CSS variables with light and dark

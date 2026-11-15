@@ -114,7 +114,7 @@ keyed hashes and counts. The master key lives only in the gateway's environment.
 
 1. **Browser extension**: protects people using chatgpt.com, claude.ai and gemini.google.com directly. It's connected to the live gateway: install it and use it, with nothing to set up. **[Download the extension (zip)](https://github.com/SubhodipShee/safe-ai-data-gateway/raw/main/download/safe-ai-gateway-extension.zip)** · [Install guide](extension/README.md).
 2. **VS Code extension** (for AI coding tools: Copilot, Claude Code, Codex, Cursor…): underlines Aadhaar, PAN and API keys in your files, protects secret files from AI tools, and copies code with values masked. Runs fully offline. *In development: private for now, not yet available for download.*
-3. **API proxy**: OpenAI-compatible `POST /v1/chat/completions`. Existing code changes **one line**, the base URL.
+3. **API proxy**, also for **AI coding agents** (Cline, Continue, Aider…: `/agent/v1`, masks the files they read, with streaming): OpenAI-compatible `POST /v1/chat/completions`. Existing code changes **one line**, the base URL.
 4. **Playground + dashboard**: try it in any browser, and see what was stopped, by whom and where.
 
 ## Quick start (Windows `cmd`, all free)

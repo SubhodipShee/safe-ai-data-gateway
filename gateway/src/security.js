@@ -123,10 +123,19 @@ const sha256 = (text) => createHash('sha256').update(String(text)).digest();
  * @param {string|undefined} adminKey
  */
 export function requireAdminKey(adminKey) {
+  return requireBearerKey(adminKey, { error: 'Admin key required to change policies.' });
+}
+
+/**
+ * The general version: only lets the request through with "Authorization: Bearer <expectedKey>".
+ * No expectedKey = no check (used on the laptop). Also used for the coding-agent proxy (AGENT_KEY).
+ * @param {object} errorBody  what to answer (401) when the key is missing or wrong
+ */
+export function requireBearerKey(expectedKey, errorBody) {
   return (req, res, next) => {
-    if (!adminKey) return next();
+    if (!expectedKey) return next();
     const sent = (req.get('authorization') || '').replace(/^Bearer\s+/i, '');
-    if (sent && timingSafeEqual(sha256(sent), sha256(adminKey))) return next();
-    res.status(401).json({ error: 'Admin key required to change policies.' });
+    if (sent && timingSafeEqual(sha256(sent), sha256(expectedKey))) return next();
+    res.status(401).json(errorBody);
   };
 }

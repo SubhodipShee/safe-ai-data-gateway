@@ -39,6 +39,28 @@ export class AiProviderError extends Error {
   }
 }
 
+const AGENT_TIMEOUT_MS = 300_000; // coding agents can wait longer (big answers, streaming)
+
+/**
+ * Turns a provider's error response into a clear AiProviderError. (The API key is never included.)
+ * Used by both chat() and forward(), so the messages are the same everywhere.
+ */
+async function providerError(response, providerName, model) {
+  const body = await response.json().catch(() => ({}));
+  const providerMessage = String(body?.error?.message || body?.message || '').slice(0, 200);
+  if (response.status === 401 || response.status === 403) {
+    return new AiProviderError(`${providerName} rejected the API key. Check AI_API_KEY in gateway/.env.`, 502);
+  }
+  if (response.status === 429) {
+    const retryAfter = Number(response.headers.get('retry-after')) || undefined;
+    return new AiProviderError(`${providerName} free-tier limit reached. Try again shortly.`, 429, retryAfter);
+  }
+  if (response.status === 404) {
+    return new AiProviderError(`${providerName} doesn't know the model "${model}". Run: npm run check-ai`, 502);
+  }
+  return new AiProviderError(`${providerName} error ${response.status}: ${providerMessage}`, 502);
+}
+
 /**
  * Creates the client.
  * @param {object} options
@@ -95,23 +117,8 @@ export function createLlmClient({ provider, apiKey, model, baseUrl }) {
       );
     }
 
+    if (!response.ok) throw await providerError(response, settings.providerName, settings.model);
     const body = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      // Turn the provider's error into a clear message. (The API key is never included.)
-      const providerMessage = String(body?.error?.message || body?.message || '').slice(0, 200);
-      if (response.status === 401 || response.status === 403) {
-        throw new AiProviderError(`${settings.providerName} rejected the API key. Check AI_API_KEY in gateway/.env.`, 502);
-      }
-      if (response.status === 429) {
-        const retryAfter = Number(response.headers.get('retry-after')) || undefined;
-        throw new AiProviderError(`${settings.providerName} free-tier limit reached. Try again shortly.`, 429, retryAfter);
-      }
-      if (response.status === 404) {
-        throw new AiProviderError(`${settings.providerName} doesn't know the model "${settings.model}". Run: npm run check-ai`, 502);
-      }
-      throw new AiProviderError(`${settings.providerName} error ${response.status}: ${providerMessage}`, 502);
-    }
 
     const choice = body.choices?.[0];
     return {
@@ -120,6 +127,35 @@ export function createLlmClient({ provider, apiKey, model, baseUrl }) {
       model: body.model || settings.model,
       usage: body.usage,
     };
+  }
+
+  /**
+   * Phase 12: sends a coding agent's request AS IT IS (tools, streaming and all) to the
+   * provider, and returns the provider's raw response, so the caller can read a stream.
+   * The messages inside `body` must ALREADY be masked.
+   * @param {object} body  an OpenAI chat-completions request; `model` defaults to ours
+   * @returns {Promise<Response>} the provider's response (only returned when it's OK)
+   */
+  async function forward(body) {
+    if (!configured) {
+      throw new AiProviderError('No AI provider is configured. Set AI_PROVIDER and AI_API_KEY in gateway/.env.', 503);
+    }
+    let response;
+    try {
+      response = await fetch(`${settings.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        },
+        body: JSON.stringify({ ...body, model: body.model || settings.model }),
+        signal: AbortSignal.timeout(AGENT_TIMEOUT_MS),
+      });
+    } catch (error) {
+      throw new AiProviderError(`Could not reach ${settings.providerName}: ${error.name}.`, error.name === 'TimeoutError' ? 504 : 502);
+    }
+    if (!response.ok) throw await providerError(response, settings.providerName, body.model || settings.model);
+    return response;
   }
 
   /** Lists the models this API key can use (for `npm run check-ai`). */
@@ -135,6 +171,7 @@ export function createLlmClient({ provider, apiKey, model, baseUrl }) {
 
   return {
     chat,
+    forward,
     listModels,
     configured,
     providerName: settings.providerName,

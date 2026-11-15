@@ -74,6 +74,14 @@ if (adminKey && adminKey.length < 16) {
   throw new Error('ADMIN_KEY is too short (use at least 16 characters). Generate one with: npm run gen-key');
 }
 
+// ---- AGENT_KEY: password for the coding-agent proxy (Phase 12), optional ----
+// On your laptop it's optional. Online, /agent stays OFF unless this is set, so nobody
+// else can use your server, database or AI quota. Agents send it as their "API key".
+const agentKey = process.env.AGENT_KEY?.trim() || undefined;
+if (agentKey && agentKey.length < 16) {
+  throw new Error('AGENT_KEY is too short (use at least 16 characters). Generate one with: npm run gen-key');
+}
+
 // The final settings object. Object.freeze stops any code from changing it by accident.
 export const config = Object.freeze({
   // Which port the gateway listens on (http://127.0.0.1:7000). Render sets PORT itself.
@@ -82,6 +90,7 @@ export const config = Object.freeze({
   host,
   isPublic,
   adminKey,
+  agentKey,
 
   // The header that holds the visitor's real IP address, for the rate limits.
   //   laptop: not set (the connection's own address is used)

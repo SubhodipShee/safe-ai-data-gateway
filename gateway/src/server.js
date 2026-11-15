@@ -48,6 +48,7 @@ const app = createApp({
   isPublic: config.isPublic, // online: HTTPS redirect + rate limits (security.js)
   adminKey: config.adminKey, // needed to change policies when set
   clientIpHeader: config.clientIpHeader, // Render: 'true-client-ip' (the visitor's real IP for rate limits)
+  agentKey: config.agentKey, // coding-agent proxy key (online: /agent is off without it)
 });
 const server = app.listen(config.port, config.host, () => {
   const shownHost = config.host === '0.0.0.0' ? 'localhost' : config.host;
