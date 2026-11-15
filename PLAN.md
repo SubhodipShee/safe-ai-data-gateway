@@ -279,6 +279,13 @@ SAFE AI DATA GATEWAY/
 | 8 | Chrome extension (ChatGPT, Claude, Gemini + local demo chat) | ✅ Tested on chatgpt.com: masked before sending, restored on screen (green), one session per chat, "show what the AI saw" switch. Backup demo: `/chat-demo.html` |
 | 9 | Dashboard + README + demo script | ✅ 240/240 tests; `/dashboard.html` (charts, live policies, audit verify, signed report); README.md; demo/demo-script.md |
 | 10 | Go online (section 11) | ✅ 250/250 tests; live at https://safe-ai-gateway.onrender.com; checked live: DB connected, http→https, CSP/HSTS, mask→unmask round trip, admin key 401, audit intact. Live check found and fixed: proxy hops (rate limits) and "Aadhaar" read as a name |
+| 11 | **VS Code extension, part 1** (new folder `vscode-extension/`): underline sensitive data in files, protect files from AI tools, copy masked / paste restored | Works in VS Code and VS Code-based editors; shared as a `.vsix` on GitHub (free) |
+| 12 | **Gateway for AI coding tools**: Anthropic Messages + OpenAI Responses formats, with streaming | Live test with Cline + Gemini/Groq free tier, gateway running on the laptop |
+| 13 | **"Protect my AI tools" button** in the VS Code extension: routes terminal agents (Claude Code, Codex…) and, if the free plan allows, Copilot through the gateway | One click, automatic masking for coding tools |
+
+**Two products, one gateway:** the **browser extension** (`extension/`, for chatgpt.com, claude.ai, gemini.google.com) stays
+exactly as it is. The **VS Code extension** is a separate, second product for AI coding tools. Gateway changes must keep
+the browser extension's `/mask`, `/unmask` and `/health` working unchanged. Everything stays free.
 
 **Risks**
 - AI websites change their page structure often. Keep the extension's selectors in one config object, and keep the API-proxy demo as a backup.
