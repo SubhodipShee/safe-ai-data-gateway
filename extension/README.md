@@ -13,13 +13,13 @@ highlighted in green.
 
 ## Install (2 minutes, Chrome or Edge)
 
-1. **Download** the project: https://github.com/SubhodipShee/safe-ai-data-gateway → green **Code** button → **Download ZIP**.
+1. **Download** the extension (26 KB): **[safe-ai-gateway-extension.zip](https://github.com/SubhodipShee/safe-ai-data-gateway/raw/main/download/safe-ai-gateway-extension.zip)**
 2. **Unzip** it (right-click → *Extract All*).
 3. Open the extensions page:
    - Chrome: type `chrome://extensions` in the address bar
    - Edge: type `edge://extensions`
 4. Switch on **Developer mode** (top right in Chrome, left side in Edge).
-5. Click **Load unpacked** and choose the **`extension`** folder inside the unzipped project.
+5. Click **Load unpacked** and choose the unzipped **`safe-ai-gateway-extension`** folder (the one with `manifest.json` inside).
 6. Click the 🧩 puzzle icon in the toolbar and **pin** "Safe AI Gateway".
 
 It isn't in the Chrome Web Store (that costs a fee), which is why it's installed this way.

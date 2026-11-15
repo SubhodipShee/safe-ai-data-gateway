@@ -71,7 +71,7 @@ keyed hashes and counts. The master key lives only in the gateway's environment.
 
 ## Three ways to use it
 
-1. **Browser extension**: protects people using chatgpt.com, claude.ai and gemini.google.com directly. It's connected to the live gateway: install it and use it, with nothing to set up. [Install guide](extension/README.md).
+1. **Browser extension**: protects people using chatgpt.com, claude.ai and gemini.google.com directly. It's connected to the live gateway: install it and use it, with nothing to set up. **[Download the extension (zip)](https://github.com/SubhodipShee/safe-ai-data-gateway/raw/main/download/safe-ai-gateway-extension.zip)** · [Install guide](extension/README.md).
 2. **API proxy**: OpenAI-compatible `POST /v1/chat/completions`. Existing code changes **one line**, the base URL.
 3. **Playground + dashboard**: try it in any browser, and see what was stopped, by whom and where.
 
@@ -92,12 +92,13 @@ Put the generated key in `.env` as `MASTER_KEY=`, then add your `MONGODB_URI` (a
 | Command | What it does |
 |---|---|
 | `npm run dev` | Start the gateway on http://127.0.0.1:7000 (reloads on save) |
-| `npm test` | Run the 250 automated tests (some against your Atlas test databases) |
+| `npm test` | Run the 251 automated tests (some against your Atlas test databases) |
 | `npm run check-db` | Check the Atlas connection without printing the password |
 | `npm run check-ai` | Check the AI key and list the models it can use |
 | `npm run register-code -- ../demo/acme-payments` | Protect a code folder (only fingerprints are stored) |
 | `npm run tamper-demo` | Watch the audit chain catch an attacker (uses a throwaway database) |
 | `npm run vault-demo` | See exactly what Atlas stores for a masked value |
+| `npm run zip-extension` | Rebuild `download/safe-ai-gateway-extension.zip` after changing the extension (a test checks it's up to date) |
 | `npm run download-model` | Download the local AI name model ahead of time (Render does this while building) |
 
 Then open:
@@ -149,9 +150,10 @@ gateway/
     masker.js      detect → policy → vault → replace → audit
     vault.js       encrypted storage of real values
   public/          playground, dashboard, demo chat
-  test/            250 tests
+  test/            251 tests
 extension/         Chrome extension (Manifest V3)
 demo/              fake "ACME Payments" repo + demo script
+download/          the extension as a zip, ready to share
 PLAN.md            full design and build log
 ```
 

@@ -51,7 +51,7 @@ Dashboard → **Verify audit log now** → ✔ Intact.
 
 ## 7. Close (15 s)
 > "Free, self-hosted, India-first: Aadhaar Verhoeff, GSTIN checksums, local AI for names, and
-> 250 automated tests. Developers can use it too: it's an OpenAI-compatible proxy, one-line change."
+> 251 automated tests. Developers can use it too: it's an OpenAI-compatible proxy, one-line change."
 
 ---
 

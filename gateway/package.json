@@ -17,7 +17,8 @@
     "tamper-demo": "node scripts/tamper-demo.js",
     "register-code": "node scripts/register-code.js",
     "check-ai": "node scripts/check-ai.js",
-    "download-model": "node scripts/download-model.js"
+    "download-model": "node scripts/download-model.js",
+    "zip-extension": "node scripts/zip-extension.js"
   },
   "engines": {
     "node": "24.x"
