@@ -162,6 +162,34 @@ Then open:
 
 Setting `HOST=0.0.0.0` switches on **public mode** (see `gateway/src/security.js`).
 
+## Use it with AI coding agents (on your laptop)
+
+AI coding agents read your files and send them to their AI. Point them at the gateway and **everything**
+they send (your messages, the files they read, their tool calls) is masked first. Streaming works.
+
+1. Start the gateway on your laptop:
+   ```
+   cd gateway
+   npm run dev
+   ```
+   Check http://127.0.0.1:7000/health shows `"agentProxy":"on"`.
+2. In your agent, choose the **"OpenAI Compatible"** provider:
+
+   | Field | Value |
+   |---|---|
+   | Base URL | `http://127.0.0.1:7000/agent/v1` |
+   | API key | `local` (any value on your laptop) |
+   | Model | the gateway's model, e.g. `openai/gpt-oss-120b` (Groq) or `gemini-2.5-flash` (Gemini) |
+
+   Works with **Cline, Continue, Roo Code, Aider** and other tools with an OpenAI-compatible setting.
+3. The AI that answers is the one in `gateway/.env` (`AI_PROVIDER`, `AI_API_KEY`). Agents send long requests;
+   if Groq's free tier says "limit reached", a free Gemini key usually allows more per minute.
+
+**Online:** on Render the agent proxy is **off** unless you set `AGENT_KEY` in Render's Environment, so nobody
+else can use your server. Keep coding agents on the laptop gateway: it's faster and has no hosting limits.
+
+A VS Code extension (Copilot Chat model, file protection, copy masked) is in private testing.
+
 ## Security design
 
 | Concern | How it's handled |
