@@ -59,17 +59,18 @@ export class BlockedError extends Error {
  *   await texts.mask('mail rahul@abc.com')  → 'mail [[EMAIL_1]]'
  *   texts.tags                              → Set { '[[EMAIL_1]]' }  (every tag seen)
  * Only NEW text is checked (and written to the audit log); repeated text comes from memory.
+ * findNames: false = never run the name-finding AI for this conversation (online, Phase 15).
  */
-export function createTextMasker({ masker, sessionId, source }) {
+export function createTextMasker({ masker, sessionId, source, findNames: findNamesByDefault = true }) {
   const tags = new Set();
   let protectedCount = 0;
 
   /**
    * Masks one text.
    * @param {object} [options]
-   * @param {boolean} [options.findNames=true]  false = skip the name-finding AI
+   * @param {boolean} [options.findNames]  false = skip the name-finding AI (default: the conversation's setting)
    */
-  async function mask(text, { findNames = true } = {}) {
+  async function mask(text, { findNames = findNamesByDefault } = {}) {
     if (typeof text !== 'string' || text === '') return text;
     const key = `${sessionId}:${findNames ? 'n' : '-'}:${fingerprint(text)}`;
 
@@ -106,11 +107,12 @@ export function createTextMasker({ masker, sessionId, source }) {
  * @param {string} options.sessionId  same session for the whole conversation = same tags
  * @param {object[]} options.messages the agent's messages (not changed; a masked copy is returned)
  * @param {string} options.source     for the audit log, e.g. "coding-agent:groq"
+ * @param {boolean} [options.findNames=true]  false = don't look for people's names (online)
  * @returns {Promise<{ messages: object[], tags: Set<string>, protectedCount: number }>}
  * @throws {BlockedError} if a "block" policy matches
  */
-export async function maskConversation({ masker, sessionId, messages, source }) {
-  const texts = createTextMasker({ masker, sessionId, source });
+export async function maskConversation({ masker, sessionId, messages, source, findNames = true }) {
+  const texts = createTextMasker({ masker, sessionId, source, findNames });
   const maskOne = (text) => texts.mask(text);
 
   const maskedMessages = [];

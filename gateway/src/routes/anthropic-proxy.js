@@ -130,8 +130,9 @@ async function relayStream(upstream, res, values) {
  * @param {boolean} options.isPublic   online? Then AGENT_KEY is required
  * @param {string} [options.agentKey]  the AGENT_KEY setting
  * @param {string} [options.upstreamUrl] Anthropic's API (changeable for tests)
+ * @param {boolean} [options.findNames=true]  look for people's names? (online: off, see config.js)
  */
-export function anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstreamUrl = 'https://api.anthropic.com' }) {
+export function anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstreamUrl = 'https://api.anthropic.com', findNames = true }) {
   const router = express.Router();
 
   // ---- Who may use it ----
@@ -157,7 +158,7 @@ export function anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstrea
     const sessionId = sessionFor(req, req.body ?? {});
     let masked;
     try {
-      masked = await maskAnthropicRequest({ masker, sessionId, source: SOURCE, body: req.body ?? {} });
+      masked = await maskAnthropicRequest({ masker, sessionId, source: SOURCE, body: req.body ?? {}, findNames });
     } catch (error) {
       if (!(error instanceof BlockedError)) throw error;
       const types = Object.keys(error.blockedTypes ?? {}).join(', ');

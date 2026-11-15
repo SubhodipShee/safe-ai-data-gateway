@@ -180,8 +180,9 @@ async function relayStream(upstream, res, values) {
  * @param {string} options.providerKey  e.g. 'groq' (for the audit log)
  * @param {boolean} options.isPublic    online? Then AGENT_KEY is required
  * @param {string} [options.agentKey]   the AGENT_KEY setting
+ * @param {boolean} [options.findNames=true]  look for people's names? (online: off, see config.js)
  */
-export function agentProxyRoute({ masker, vault, llm, providerKey, isPublic, agentKey }) {
+export function agentProxyRoute({ masker, vault, llm, providerKey, isPublic, agentKey, findNames = true }) {
   const router = express.Router();
 
   // Online without an AGENT_KEY: switched off completely.
@@ -217,7 +218,7 @@ export function agentProxyRoute({ masker, vault, llm, providerKey, isPublic, age
     // ---- Step 1: mask the whole conversation ----
     let masked;
     try {
-      masked = await maskConversation({ masker, sessionId, messages: body.messages, source });
+      masked = await maskConversation({ masker, sessionId, messages: body.messages, source, findNames });
     } catch (error) {
       if (!(error instanceof BlockedError)) throw error;
       return openAiError(res, 403, 'Blocked by policy: the conversation contains data that must never be sent to an AI.', 'policy_violation', {

@@ -148,4 +148,17 @@ describe('config.js', () => {
     assert.equal(loadConfig({ HOST: '0.0.0.0', ADMIN_KEY: ADMIN_KEY }), '');
     assert.match(loadConfig({ HOST: '0.0.0.0', ADMIN_KEY: 'short' }), /too short/);
   });
+
+  test('names in coding tools\' files: off online (too slow on 0.1 CPU), on the laptop on', () => {
+    /** Prints config.agentNameDetection from a separate Node process. */
+    const namesOn = (env) => execFileSync(process.execPath, ['--input-type=module', '-e',
+      "const { config } = await import('./src/config.js'); console.log(config.agentNameDetection)"], {
+      cwd: gatewayFolder,
+      env: { PATH: process.env.PATH, MONGODB_URI: 'mongodb+srv://user:pass@example.invalid', MASTER_KEY: randomBytes(32).toString('base64'), AGENT_NAME_DETECTION: '', ...env },
+    }).toString().trim();
+
+    assert.equal(namesOn({ HOST: '0.0.0.0', ADMIN_KEY }), 'false', 'online: off by default');
+    assert.equal(namesOn({ HOST: '127.0.0.1' }), 'true', 'laptop: on by default');
+    assert.equal(namesOn({ HOST: '0.0.0.0', ADMIN_KEY, AGENT_NAME_DETECTION: 'on' }), 'true', 'can be switched on');
+  });
 });

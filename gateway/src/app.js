@@ -60,8 +60,9 @@ const publicFolder = path.join(path.dirname(fileURLToPath(import.meta.url)), '..
  * @param {string} [options.clientIpHeader] header with the visitor's real IP (Render: 'true-client-ip')
  * @param {string} [options.agentKey]   key for the coding-agent proxies under /agent (Phases 12 and 14)
  * @param {string} [options.anthropicUrl] where Claude Code's requests go (Anthropic; changeable for tests)
+ * @param {boolean} [options.agentNameDetection=true] find names in what coding tools send? (online: off, Phase 15)
  */
-export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, providerKey = 'none', isPublic = false, adminKey, clientIpHeader, agentKey, anthropicUrl }) {
+export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, providerKey = 'none', isPublic = false, adminKey, clientIpHeader, agentKey, anthropicUrl, agentNameDetection = true }) {
   const app = express();
   const masker = createMasker({ vault, auditChain, codeGuard, nameFinder });
 
@@ -83,6 +84,7 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
     app.use(['/mask', '/detect', '/session'], limits.mask);
     app.use('/unmask', limits.unmask);
     app.use('/v1', limits.aiPerVisitor, limits.aiTotalPerDay);
+    app.use('/agent', limits.agent);
     app.use('/api', limits.read);
     app.put('/api/policies/:type', limits.admin);
   }
@@ -91,9 +93,10 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
 
   // ---- The coding-agent proxy (Phase 12) ----
   // Mounted BEFORE the 1 MB limit below, because agents send whole files (it allows 20 MB).
-  if (llm) app.use(agentProxyRoute({ masker, vault, llm, providerKey, isPublic, agentKey }));
+  const findNames = agentNameDetection;
+  if (llm) app.use(agentProxyRoute({ masker, vault, llm, providerKey, isPublic, agentKey, findNames }));
   // Claude Code (Phase 14): needs no AI key of ours, it brings the user's own Claude login.
-  app.use(anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstreamUrl: anthropicUrl }));
+  app.use(anthropicProxyRoute({ masker, vault, isPublic, agentKey, upstreamUrl: anthropicUrl, findNames }));
 
   // Read JSON request bodies, up to 1 MB.
   app.use(express.json({ limit: '1mb' }));
@@ -115,6 +118,7 @@ export function createApp({ vault, auditChain, codeGuard, nameFinder, llm, provi
       adminKeyRequired: Boolean(adminKey), // the dashboard asks for the key when true (Phase 10)
       agentProxy: llm?.configured && (!isPublic || agentKey) ? 'on' : 'off', // /agent/v1 for coding tools (Phase 12)
       claudeCodeProxy: !isPublic || agentKey ? 'on' : 'off', // /agent/anthropic for Claude Code (Phase 14)
+      agentNameDetection: agentNameDetection ? 'on' : 'off', // names in coding tools' files (Phase 15)
     });
   });
 

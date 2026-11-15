@@ -43,6 +43,10 @@ services:
         sync: false
       - key: AI_API_KEY
         sync: false
+      # Phase 15: the private access key for coding tools (the owner's VS Code extension).
+      # Without it, /agent and /agent/anthropic stay off online.
+      - key: AGENT_KEY
+        sync: false
       # Render creates a long random admin key for you. See it in Render → Environment.
       - key: ADMIN_KEY
         generateValue: true

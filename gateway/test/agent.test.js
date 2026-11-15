@@ -11,6 +11,8 @@ import { createVault } from '../src/vault.js';
 import { createAuditChain } from '../src/audit/audit-chain.js';
 import { createLlmClient } from '../src/ai/llm-client.js';
 import { createStreamRestorer } from '../src/agent/stream-restorer.js';
+import { maskConversation } from '../src/agent/mask-conversation.js';
+import { maskAnthropicRequest } from '../src/agent/anthropic-conversation.js';
 import { clearPolicyCache } from '../src/policies.js';
 import { Policy, seedDefaultPolicies } from '../src/models/Policy.js';
 import { connectTestDb, dropTestDb, SKIP_WITHOUT_DB } from './test-db.js';
@@ -107,6 +109,32 @@ function listen(app) {
     const server = app.listen(0, '127.0.0.1', () => resolve(server));
   });
 }
+
+describe('names on or off for coding tools (Phase 15; no database)', () => {
+  /** A fake masker that only records whether the name-finding AI was asked for. */
+  function recordingMasker() {
+    const calls = [];
+    return { calls, maskText: async ({ text, findNames }) => { calls.push(findNames); return { maskedText: text, items: [] }; } };
+  }
+
+  test('findNames: false reaches every text of an OpenAI-style conversation (online setting)', async () => {
+    const masker = recordingMasker();
+    await maskConversation({ masker, sessionId: 'names-off-openai-1', messages: conversation(), source: 'test', findNames: false });
+    assert.ok(masker.calls.length >= 3);
+    assert.ok(masker.calls.every((asked) => asked === false), JSON.stringify(masker.calls));
+  });
+
+  test('Claude Code format: off online; on the laptop names are found except in Claude Code\'s own instructions', async () => {
+    const body = { system: 'You are Claude Code.', messages: [{ role: 'user', content: 'Mail Rahul Verma about the refund' }] };
+    const online = recordingMasker();
+    await maskAnthropicRequest({ masker: online, sessionId: 'names-off-claude-1', source: 'test', body, findNames: false });
+    assert.deepEqual(online.calls, [false, false]);
+
+    const laptop = recordingMasker();
+    await maskAnthropicRequest({ masker: laptop, sessionId: 'names-on-claude-1', source: 'test', body });
+    assert.deepEqual(laptop.calls, [false, true], 'instructions: no names ("Claude" is not a person); the message: names');
+  });
+});
 
 describe('coding-agent proxy (fake provider + Atlas)', { skip: SKIP_WITHOUT_DB }, () => {
   let fakeServer;

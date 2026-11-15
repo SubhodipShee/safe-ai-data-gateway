@@ -66,7 +66,8 @@ The API proxy (`POST /v1/chat/completions`, OpenAI-compatible) does mask → AI 
 1. **Never store, log or return a raw sensitive value**, except `/unmask` returning it to the session that
    owns it. The database holds only ciphertext, keyed hashes (HMAC) and counts. Logs print types and counts only.
 2. **Never put secrets in git.** Secrets live only in `gateway/.env` (git-ignored) and in Render → Environment:
-   `MONGODB_URI`, `MASTER_KEY`, `AI_API_KEY`, `ADMIN_KEY`. Never print them in scripts or output.
+   `MONGODB_URI`, `MASTER_KEY`, `AI_API_KEY`, `ADMIN_KEY`, `AGENT_KEY`. Never print them in scripts or output.
+   (`AGENT_KEY` is also built into the private VS Code extension by `vscode-extension/build.mjs`; never commit `dist/` or the `.vsix`.)
 3. **`MASTER_KEY` must be the same everywhere** (laptop and Render). The vault encryption, the HMAC
    fingerprints, the code fingerprints and the audit signing key are all derived from it.
 4. **The audit log is append-only.** Never delete or edit `auditlogs` / `auditheads` documents, not even
@@ -189,7 +190,8 @@ node --test test/detectors.test.js     (one file)
 - **Settings** (`gateway/.env`, see `.env.example`): `MONGODB_URI`, `MASTER_KEY` (32 bytes base64, `npm run gen-key`),
   `HOST`, `PORT`, `ADMIN_KEY`, `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `NAME_DETECTION`, `SESSION_TTL_HOURS`,
   `DNS_SERVERS` (only for laptops whose DNS refuses SRV lookups), `CLIENT_IP_HEADER` (Render: `true-client-ip`),
-  `AGENT_KEY` (key for `/agent`; online the coding-agent proxy is off without it).
+  `AGENT_KEY` (key for `/agent`; online the coding-agent proxy is off without it),
+  `AGENT_NAME_DETECTION` (names in coding tools' files; default on locally, off online because it's too slow on 0.1 CPU).
 - **Public mode:** any `HOST` other than 127.0.0.1/localhost turns on the HTTPS redirect, rate limits, and requires `ADMIN_KEY`.
   On Render (`RENDER=true`, set by Render itself) `HOST` defaults to `0.0.0.0`; without that, a deploy fails with
   "Port scan timeout… no open ports detected" because the server would only listen on 127.0.0.1.
@@ -250,7 +252,9 @@ database code (that's why the tag rules live in `gateway/src/tags.js`). Gateway 
 
 ### H. The coding-agent proxy (`/agent`, Phase 12)
 - Use it from an agent's "OpenAI-compatible" provider: Base URL `http://127.0.0.1:7000/agent/v1`, any API key on the laptop.
-- Keep the gateway on the laptop for coding agents (fast, private). On Render it stays off unless `AGENT_KEY` is set.
+- On Render it stays off unless `AGENT_KEY` is set; then only requests with that key get in (the private VS Code
+  extension uses Render by default with the key built in, Phase 15). Online, names aren't searched in coding tools'
+  files (`AGENT_NAME_DETECTION`): measured 43 s per 10 KB file on Render's 0.1 CPU, and 18 KB crashed the server.
 - Every text in the conversation is masked (`agent/mask-conversation.js` → `createTextMasker`). Claude Code's format lives in
   `agent/anthropic-conversation.js` + `routes/anthropic-proxy.js`. A future OpenAI "Responses" format (Codex) should reuse the same pieces.
 - Claude Code rules (Anthropic's gateway guide): forward `Authorization`, `anthropic-*` headers and every body field unchanged;

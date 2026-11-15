@@ -82,6 +82,14 @@ if (agentKey && agentKey.length < 16) {
   throw new Error('AGENT_KEY is too short (use at least 16 characters). Generate one with: npm run gen-key');
 }
 
+// ---- AGENT_NAME_DETECTION: find names in what coding tools send? (Phase 15) ----
+// Coding tools send whole files. Measured on Render's free server (0.1 CPU): the name
+// model took 43 s for one 10 KB file and crashed the server at 18 KB, while every other
+// check took under 0.5 s. So ONLINE it's off by default: PAN, Aadhaar, emails, phones,
+// keys, passwords and private code are still masked, only names are not.
+// On the laptop it's on. Chat messages (/mask, the browser extension) always find names.
+const agentNameDetection = (process.env.AGENT_NAME_DETECTION || (isPublic ? 'off' : 'on')).trim().toLowerCase() !== 'off';
+
 // The final settings object. Object.freeze stops any code from changing it by accident.
 export const config = Object.freeze({
   // Which port the gateway listens on (http://127.0.0.1:7000). Render sets PORT itself.
@@ -91,6 +99,7 @@ export const config = Object.freeze({
   isPublic,
   adminKey,
   agentKey,
+  agentNameDetection,
 
   // The header that holds the visitor's real IP address, for the rate limits.
   //   laptop: not set (the connection's own address is used)

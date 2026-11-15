@@ -203,8 +203,10 @@ Claude Code can send everything through the gateway too, **with your normal Clau
 Messages, files Claude Code reads, CLAUDE.md and tool calls are masked; answers and file edits get the real
 values back. Streaming, prompt caching and Claude's thinking keep working.
 
-**Online:** on Render the agent proxy is **off** unless you set `AGENT_KEY` in Render's Environment, so nobody
-else can use your server. Keep coding agents on the laptop gateway: it's faster and has no hosting limits.
+**Online:** on Render the coding-tool proxies only answer requests that carry the private `AGENT_KEY`
+(the owner's VS Code extension has it built in), so nobody else can use the server. Online, people's
+**names** in coding tools' files are not masked: measured on Render's free 0.1 CPU, the name model needs 43 s
+for one 10 KB file. Every other check takes under 0.5 s. The laptop gateway masks names too.
 
 A VS Code extension (Copilot Chat model, file protection, copy masked) is in private testing.
 

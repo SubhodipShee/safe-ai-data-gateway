@@ -71,11 +71,12 @@ async function maskContent(content, maskText) {
  * @param {string} options.sessionId  one session per Claude Code session = the same tags all along
  * @param {string} options.source     for the audit log, e.g. "claude-code:anthropic"
  * @param {object} options.body       the request body Claude Code sent
+ * @param {boolean} [options.findNames=true]  false = don't look for people's names (online)
  * @returns {Promise<{ body: object, tags: Set<string> }>}
  * @throws {BlockedError} if a "block" policy matches (see mask-conversation.js)
  */
-export async function maskAnthropicRequest({ masker, sessionId, source, body }) {
-  const texts = createTextMasker({ masker, sessionId, source });
+export async function maskAnthropicRequest({ masker, sessionId, source, body, findNames = true }) {
+  const texts = createTextMasker({ masker, sessionId, source, findNames });
 
   // Claude Code's own instructions: all detectors EXCEPT the name-finding AI,
   // which would mistake "Claude" for a person's name.

@@ -94,6 +94,8 @@ function limiter({ limit, minutes, what, perVisitor = true, clientIpHeader }) {
  *   - masking: 30 per minute is far more than anyone types into a chat
  *   - unmask: higher, because the extension restores tags every time the page changes
  *   - real AI: low per visitor, AND a daily total so the free Groq quota can't be used up
+ *   - coding tools (/agent): one question = many requests (each file read or tool step
+ *     is one), so a higher limit; only people with the AGENT_KEY get this far anyway
  *   - admin: few attempts, so nobody can guess the admin key
  */
 export function createRateLimits({ clientIpHeader } = {}) {
@@ -105,6 +107,7 @@ export function createRateLimits({ clientIpHeader } = {}) {
     aiPerVisitor: limiter({ limit: 6, minutes: 1, what: 'AI requests', ...per }),
     aiTotalPerDay: limiter({ limit: 300, minutes: 24 * 60, what: 'AI requests today (demo limit)', perVisitor: false }),
     admin: limiter({ limit: 20, minutes: 15, what: 'admin attempts', ...per }),
+    agent: limiter({ limit: 60, minutes: 1, what: 'coding-tool requests', ...per }),
   };
 }
 
